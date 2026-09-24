@@ -36,7 +36,9 @@ const projects = (await getCollection("projects")).sort(
                 <span class="idx-name">{project.data.title}</span>
                 <span class="idx-meta">
                   <span class="idx-stack">{project.data.stack.join(" · ")}</span>
-                  <span class="idx-year">{project.data.year}</span>
+                  <span class="idx-year">
+                    {project.data.status === "wip" ? "En cours" : project.data.year}
+                  </span>
                 </span>
               </a>
             </li>

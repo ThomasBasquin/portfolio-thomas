@@ -9,8 +9,9 @@ interface Props {
 }
 
 const { project, index } = Astro.props;
-const { title, tagline, description, role, stack, year, links, media, accent, device } =
+const { title, tagline, description, role, stack, year, status, links, media, accent, device } =
   project.data;
+const wip = status === "wip";
 
 const roles = accentRoles(accent);
 const num = String(index + 1).padStart(2, "0");
@@ -32,7 +33,10 @@ const alt =
 >
   <div class="container grid">
     <div class="showcase-text">
-      <p class="showcase-num micro">{num}</p>
+      <p class="showcase-num micro">
+        {num}
+        {wip && <span class="status-tag">En cours</span>}
+      </p>
       <h2 id={titleId}>{title}</h2>
       <p class="showcase-tagline">{tagline}</p>
       <p class="showcase-desc">{description}</p>
@@ -51,8 +55,8 @@ const alt =
         </div>
       </dl>
       <p class="showcase-links">
-        <a class="btn btn--solid" href={`/projets/${project.id}`}>Étude de cas</a>
-        {links.demo && (
+        <a class="btn btn--solid" href={`/projets/${project.id}`}>Détails du projet</a>
+        {!wip && links.demo && (
           <a class="btn" href={links.demo} target="_blank" rel="noopener">
             Voir le site <span aria-hidden="true">↗</span>
           </a>
@@ -64,7 +68,7 @@ const alt =
         kind={device}
         poster={media.poster}
         video={media.video}
-        url={links.demo}
+        url={wip ? undefined : links.demo}
         alt={alt}
       />
     </div>

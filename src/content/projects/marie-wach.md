@@ -1,12 +1,12 @@
 ---
 title: "Marie Wach"
 tagline: "Un cabinet d'ostéopathie, en ligne"
-description: "Site vitrine pour un cabinet d'ostéopathie, avec prise de rendez-vous en ligne."
+description: "Le site d'un cabinet d'ostéopathie : les soins proposés, le cabinet et la prise de rendez-vous."
 role: "Design, développement et mise en ligne"
-stack: ["Astro", "TypeScript", "Leaflet"]
+stack: ["Astro", "JavaScript", "Leaflet"]
 accent: "#57c785"
-device: "browser"
-year: 2024
+device: "phone"
+year: 2026
 links:
   demo: "https://mariewach.fr/"
 media:
@@ -15,22 +15,31 @@ media:
     webm: "/media/marie-wach/loop.webm"
     mp4: "/media/marie-wach/loop.mp4"
   gallery:
-    - "/media/marie-wach/capture-1.webp"
-    - "/media/marie-wach/capture-2.webp"
+    - src: "/media/marie-wach/capture-1.webp"
+      caption: "La séance : le déroulé d'une consultation"
+    - src: "/media/marie-wach/capture-2.webp"
+      caption: "Pour qui : un encadré par profil de patient"
+    - src: "/media/marie-wach/capture-3.webp"
+      caption: "À propos : formation et expériences cliniques"
+    - src: "/media/marie-wach/capture-4.webp"
+      caption: "Contact, de nuit : carte, horaires, rendez-vous"
+  galleryDevice: "browser"
 featured: false
 order: 2
 ---
 
-## Le besoin du cabinet
+## Ce dont le cabinet avait besoin
 
-Un cabinet d'ostéopathie à Dieffenbach-au-Val avait besoin de trois choses : être trouvé, être situé, être joignable pour un rendez-vous. Le reste est du bruit.
+Marie Wach est ostéopathe à Dieffenbach-au-Val. Son site devait répondre à trois questions : ce qu'elle fait, où se trouve le cabinet, et comment prendre rendez-vous.
 
-Le site tient donc sur peu d'écrans : ce que fait la praticienne, où se trouve le cabinet — carte Leaflet, pas d'iframe tierce à charger — et la prise de rendez-vous. La mention que l'ostéopathie ne se substitue pas à un suivi médical y figure explicitement : un site de santé engage celle dont il porte le nom.
+Il présente donc le déroulé d'une séance, les patients qu'elle accompagne (adultes, femmes enceintes, nourrissons, sportifs), son parcours, et une page contact avec les horaires et une carte. La carte est faite avec Leaflet plutôt qu'avec une intégration Google Maps, ce qui rend la page plus légère.
 
-## Le thème circadien
+## La prise de rendez-vous
 
-Le site n'a pas de bouton « mode sombre » comme réglage principal. Il est clair entre le lever et le coucher du soleil, sombre la nuit.
+Les rendez-vous se prennent sur Doctolib. Marie y gère déjà son agenda et ses patients ont l'habitude de l'utiliser. Refaire un système de réservation aurait créé un deuxième agenda à tenir à jour, sans rien apporter aux patients. Le site envoie donc vers Doctolib, depuis chaque page.
 
-Les heures ne viennent pas d'une API : elles sont calculées à partir des coordonnées du cabinet, équation du temps comprise. Le script est inliné dans le `<head>` et s'exécute avant le premier rendu, pour qu'aucun flash de thème ne soit visible au chargement. Une bascule manuelle reste possible, retenue le temps de la visite.
+## Un thème qui suit le soleil
 
-C'est le genre de détail que personne ne remarque tant qu'il fonctionne — ce qui est exactement le but.
+Le site est clair le jour et sombre la nuit, automatiquement. L'heure du lever et du coucher du soleil est calculée à partir de la position du cabinet, sans faire appel à un service externe.
+
+Le calcul se fait avant l'affichage de la page, donc on ne voit jamais le site changer de couleur au chargement. Un bouton permet quand même de choisir le thème à la main.

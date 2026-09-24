@@ -65,5 +65,6 @@ Sans ces variables, le script capture l'écran de connexion et le signale — do
 3. `device` : `browser` (capture 1440×900, cadre navigateur avec le vrai nom d'hôte) ou `phone` (capture 390×844, cadre téléphone). Le choix se fait sur ce qu'est le produit, pas sur ce qui rend bien.
 4. `accent` : couleur hex du fil conducteur. Les variantes lisibles (texte, fonds, theme-color) sont dérivées au build avec contraste AA garanti.
 5. `order` contrôle la position ; les sections alternent automatiquement de côté.
+6. `status: "wip"` pour un projet pas encore en ligne dans sa version actuelle : ni lien, ni média, un écran « Refonte en cours » à la place, et « En cours » au lieu de l'année dans l'index. Le script de capture l'ignore tant qu'il n'a pas de `links.demo`.
 
 Le corps de la fiche reste court et factuel : ce que fait le produit et les choix techniques réellement observables. Pas de plan d'étude de cas générique.

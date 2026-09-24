@@ -1,6 +1,6 @@
 ---
 import { getCollection, render } from "astro:content";
-import type { CollectionEntry } from "astro:content";
+import type { InferGetStaticPropsType } from "astro";
 import Base from "../../layouts/Base.astro";
 import SiteHeader from "../../components/SiteHeader.astro";
 import SiteFooter from "../../components/SiteFooter.astro";
@@ -23,15 +23,13 @@ export async function getStaticPaths() {
   }));
 }
 
-interface Props {
-  project: CollectionEntry<"projects">;
-  prev: CollectionEntry<"projects">;
-  next: CollectionEntry<"projects">;
-}
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
 
 const { project, prev, next } = Astro.props;
-const { title, tagline, description, role, stack, year, links, media, device } =
+const { title, tagline, description, role, stack, year, status, links, media, device } =
   project.data;
+const wip = status === "wip";
+const galleryDevice = media.galleryDevice ?? device;
 const accent = accentRoles(project.data.accent);
 const { Content } = await render(project);
 
@@ -42,14 +40,16 @@ const alt =
 ---
 
 <Base title={`${title} — ${SITE.name}`} description={description} accent={accent}>
-  <Fragment slot="head">
-    <link
-      rel="preload"
-      as="image"
-      href={versioned(media.poster)}
-      fetchpriority="high"
-    />
-  </Fragment>
+  {media.poster && (
+    <Fragment slot="head">
+      <link
+        rel="preload"
+        as="image"
+        href={versioned(media.poster)}
+        fetchpriority="high"
+      />
+    </Fragment>
+  )}
   <SiteHeader home={false} />
   <main id="contenu">
     <article>
@@ -61,7 +61,7 @@ const alt =
           <DeviceFrame
             kind={device}
             poster={media.poster}
-            url={links.demo}
+            url={wip ? undefined : links.demo}
             alt={alt}
             eager
           />
@@ -77,9 +77,9 @@ const alt =
           </div>
           <div>
             <dt class="micro">Année</dt>
-            <dd>{year}</dd>
+            <dd>{wip ? `${year} · en cours` : year}</dd>
           </div>
-          {(links.demo || links.code) && (
+          {!wip && (links.demo || links.code) && (
             <div>
               <dt class="micro">Liens</dt>
               <dd>
@@ -102,17 +102,18 @@ const alt =
         </div>
 
         {media.gallery.length > 0 && (
-          <div class="proj-gallery">
-            {media.gallery.map((src, i) => (
+          <div class:list={["proj-gallery", `proj-gallery--${galleryDevice}`]}>
+            {media.gallery.map(({ src, caption }) => (
               <figure>
                 <img
                   src={versioned(src)}
-                  alt={`${title}, capture ${i + 1} sur ${media.gallery.length}`}
-                  width={device === "phone" ? 780 : 1600}
-                  height={device === "phone" ? 1688 : 1000}
+                  alt={`${title} — ${caption}`}
+                  width={galleryDevice === "phone" ? 780 : 1600}
+                  height={galleryDevice === "phone" ? 1688 : 1000}
                   loading="lazy"
                   decoding="async"
                 />
+                <figcaption class="micro">{caption}</figcaption>
               </figure>
             ))}
           </div>

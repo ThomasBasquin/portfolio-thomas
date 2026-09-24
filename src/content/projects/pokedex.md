@@ -1,9 +1,9 @@
 ---
 title: "Pokédex"
 tagline: "L'encyclopédie Pokémon interactive"
-description: "Encyclopédie interactive des Pokémon, avec recherche et fiches détaillées."
+description: "Une encyclopédie des Pokémon avec recherche, fiches détaillées et navigation au doigt."
 role: "Développement"
-stack: ["Next.js", "TypeScript", "Tailwind"]
+stack: ["Next.js", "React", "Tailwind"]
 accent: "#ef4444"
 device: "phone"
 year: 2023
@@ -15,20 +15,26 @@ media:
     webm: "/media/pokedex/loop.webm"
     mp4: "/media/pokedex/loop.mp4"
   gallery:
-    - "/media/pokedex/capture-1.webp"
-    - "/media/pokedex/capture-2.webp"
+    - src: "/media/pokedex/capture-1.webp"
+      caption: "Dracaufeu : la page prend la couleur du type Feu"
+    - src: "/media/pokedex/capture-2.webp"
+      caption: "Ectoplasma : la couleur du type Spectre"
 featured: false
 order: 4
 ---
 
-## L'encyclopédie
+## Ce qu'on y trouve
 
-Chaque fiche donne le nom français et le nom japonais, la description du Pokédex, les types, les talents, la taille, le poids — et le cri, qu'on peut écouter.
+Le Pokédex couvre les 1 008 premiers Pokémon. Chaque fiche donne le nom français et le nom japonais, la description, les types, les talents, la taille et le poids. On peut aussi écouter le cri du Pokémon.
 
-La navigation couvre le millier d'entrées par tranches de cinquante, avec une recherche par nom pour aller directement au but. C'est un projet de plaisir, et ça se voit : le soin est mis là où on passe du temps, sur la fiche elle-même.
+La page entière prend la couleur du type du Pokémon affiché : rouge pour le Feu, violet pour le Spectre, et ainsi de suite.
 
-## Rendu statique
+## Chercher et naviguer
 
-Les données sont figées au build plutôt que demandées à chaque visite : les pages sont générées à l'avance et servies telles quelles. Passer d'une créature à l'autre n'attend aucun aller-retour réseau.
+La recherche accepte le nom français, le nom anglais ou le numéro, et elle tolère les fautes de frappe. Sur téléphone, on passe d'un Pokémon au suivant en glissant le doigt.
 
-C'est le projet qui m'a fait prendre mes habitudes actuelles — typage strict du jeu de données, pré-rendu par défaut, et un travail sérieux sur le poids des images quand il y en a plusieurs centaines.
+## Rapide sans serveur
+
+Le site est composé de fichiers statiques, sans serveur derrière. La première fiche est préparée à l'avance pour s'afficher tout de suite. Les autres sont chargées depuis PokéAPI, une base de données publique.
+
+Pour que ces chargements ne se sentent pas, chaque fiche consultée est gardée en mémoire, et la fiche suivante est chargée à l'avance quand on fait glisser l'écran. Sur mobile, la liste n'affiche que les lignes visibles à l'écran, ce qui la garde fluide malgré le millier d'entrées.

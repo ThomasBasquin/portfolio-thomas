@@ -400,6 +400,8 @@ main {
 }
 
 .hero-index .idx-meta {
+  display: flex;
+  gap: 1.5rem;
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
   color: var(--ink-2);
@@ -451,6 +453,42 @@ main {
 @media (prefers-reduced-motion: reduce) {
   .device-screen video {
     display: none;
+  }
+}
+
+/* Projet en cours : un écran éteint, jamais la capture d'un autre site. */
+.device-pending {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  background: radial-gradient(
+    60% 60% at 50% 50%,
+    color-mix(in oklab, var(--accent) 7%, var(--bg)),
+    var(--bg)
+  );
+}
+
+.device-pending-dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pending-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes pending-pulse {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .device-pending-dot {
+    animation: none;
   }
 }
 
@@ -610,6 +648,13 @@ main {
   gap: 0.9rem;
   color: var(--accent-ink);
   font-variant-numeric: tabular-nums;
+}
+
+.status-tag {
+  padding: 0.2em 0.65em;
+  border: 1px solid color-mix(in oklab, var(--accent) 45%, transparent);
+  border-radius: 999px;
+  line-height: 1.2;
 }
 
 .showcase-num::after {
@@ -1018,22 +1063,31 @@ main {
 .proj-gallery {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
-  gap: var(--gutter);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr));
+  gap: clamp(1.75rem, 4vh, 2.75rem) var(--gutter);
   padding-bottom: clamp(3rem, 9vh, 5.5rem);
+}
+
+/* Des captures de téléphone étirées sur une demi-page deviendraient des
+   colonnes d'un écran et demi de haut : on garde l'échelle du cadre. */
+.proj-gallery--phone {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 18rem));
+  justify-content: center;
 }
 
 .proj-gallery figure {
   margin: 0;
-  border-radius: var(--radius);
-  overflow: hidden;
-  background: var(--surface);
-  border: 1px solid var(--line);
+  display: grid;
+  gap: 0.8rem;
+  align-content: start;
 }
 
 .proj-gallery img {
   width: 100%;
   height: auto;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--line);
 }
 
 .proj-nav {

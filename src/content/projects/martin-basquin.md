@@ -1,34 +1,25 @@
 ---
 title: "Martin Basquin"
 tagline: "Le montage vidéo de Martin, en vitrine"
-description: "Portfolio créatif d'un monteur vidéo."
+description: "Le portfolio d'un vidéaste monteur, qu'il pourra mettre à jour lui-même."
 role: "Design et développement"
-stack: ["HTML", "CSS"]
-accent: "#e04fae"
+stack: ["Next.js", "Prisma", "SQLite"]
+accent: "#f5c518"
 device: "browser"
-year: 2023
-links:
-  demo: "https://martinbasquin.thomasbasquin.fr/"
-media:
-  poster: "/media/martin-basquin/poster.webp"
-  video:
-    webm: "/media/martin-basquin/loop.webm"
-    mp4: "/media/martin-basquin/loop.mp4"
-  gallery:
-    - "/media/martin-basquin/capture-1.webp"
-    - "/media/martin-basquin/capture-2.webp"
+year: 2026
+status: "wip"
 featured: false
 order: 5
 ---
 
-## Une vitrine assumée
+## Le projet
 
-Martin est vidéaste monteur. Un portfolio sobre aurait été le réflexe — on a fait l'inverse : néon, typographies d'enseigne, fond presque noir, la palette rose-bleu-violet tenue d'un bout à l'autre.
+Martin est vidéaste monteur : montages créatifs, formats verticaux pour les réseaux, reportages pour la télévision. La première version de son portfolio, en HTML et CSS, avait un style néon. Je la refais entièrement.
 
-C'est son registre, pas le mien, et c'est ce qui rend le site juste. Un monteur se choisit sur une esthétique autant que sur une technique ; la page devait afficher la sienne avant même qu'on ait lu une ligne.
+Le nouveau site aura un style inspiré du cinéma : fond noir, grain de pellicule et une seule couleur, un doré. Le décor reste discret pour laisser toute la place aux vidéos.
 
-## HTML et CSS, rien d'autre
+## Un site que Martin gère seul
 
-Aucun framework, aucune dépendance de build : deux fichiers, servis tels quels.
+Aujourd'hui, pour ajouter une vidéo, Martin doit passer par moi. La nouvelle version aura un espace d'administration protégé par mot de passe. Il pourra y ajouter ses vidéos (en fichier ou en lien YouTube ou Vimeo), les classer par catégorie, choisir leur ordre et mettre son CV à jour.
 
-Pour un site de cette taille, un outillage aurait coûté plus qu'il n'aurait rendu — et trois ans plus tard, il tourne toujours sans qu'une seule dépendance ait eu besoin d'être mise à jour. C'est le projet qui m'a appris que la longévité est un choix d'architecture, pas une conséquence.
+Le site apparaîtra ici dès sa mise en ligne.

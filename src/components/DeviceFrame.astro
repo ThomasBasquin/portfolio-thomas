@@ -8,7 +8,8 @@ import { versioned } from "../lib/asset";
 
 interface Props {
   kind: "phone" | "browser";
-  poster: string;
+  /** Absent pour un projet en cours : l'écran reste vide plutôt que de montrer un autre site. */
+  poster?: string;
   alt: string;
   video?: { webm?: string; mp4?: string };
   url?: string;
@@ -28,20 +29,28 @@ const size = kind === "phone" ? { w: 780, h: 1688 } : { w: 1600, h: 1000 };
   {kind === "browser" && (
     <div class="device-bar" aria-hidden="true">
       <span class="device-dots"><i /><i /><i /></span>
-      <span class="device-url">{host}</span>
+      {host && <span class="device-url">{host}</span>}
     </div>
   )}
   <div class="device-screen">
-    <img
-      src={versioned(poster)}
-      alt={alt}
-      width={size.w}
-      height={size.h}
-      loading={eager ? "eager" : "lazy"}
-      fetchpriority={eager ? "high" : "auto"}
-      decoding="async"
-    />
-    {hasVideo && (
+    {!poster && (
+      <p class="device-pending micro">
+        <span class="device-pending-dot" aria-hidden="true"></span>
+        Refonte en cours
+      </p>
+    )}
+    {poster && (
+      <img
+        src={versioned(poster)}
+        alt={alt}
+        width={size.w}
+        height={size.h}
+        loading={eager ? "eager" : "lazy"}
+        fetchpriority={eager ? "high" : "auto"}
+        decoding="async"
+      />
+    )}
+    {poster && hasVideo && (
       <video
         muted
         loop

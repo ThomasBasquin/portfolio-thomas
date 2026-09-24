@@ -1,12 +1,12 @@
 ---
 title: "Nook"
-tagline: "Jeux, films, séries : tout au même endroit"
-description: "Suivi collaboratif de jeux, films, séries et animés, pensé mobile-first."
+tagline: "Tout ce qu'on joue, regarde et lit, au même endroit"
+description: "Une bibliothèque de jeux, films, séries, animés et livres, partagée entre proches."
 role: "Conception, design et développement"
-stack: ["Next.js", "TypeScript", "PWA"]
+stack: ["Next.js", "TypeScript", "Tailwind", "PWA"]
 accent: "#3b5bff"
 device: "phone"
-year: 2025
+year: 2026
 links:
   demo: "https://nook.thomasbasquin.fr/"
 media:
@@ -15,20 +15,28 @@ media:
     webm: "/media/nook/loop.webm"
     mp4: "/media/nook/loop.mp4"
   gallery:
-    - "/media/nook/capture-1.webp"
-    - "/media/nook/capture-2.webp"
+    - src: "/media/nook/capture-1.webp"
+      caption: "Films : en attente et déjà vus"
+    - src: "/media/nook/capture-2.webp"
+      caption: "Animés : en cours, en attente, vus"
 featured: true
 order: 1
 ---
 
-## Ce que fait l'application
+## L'idée
 
-Nook rassemble dans une même bibliothèque ce qu'on joue, regarde et suit — jeux, films, séries, animés — au lieu d'une application par type de média. Chaque entrée porte son statut de progression, et les listes se partagent entre plusieurs personnes.
+Chacun a sa liste de choses à voir ou à jouer : une note sur le téléphone, une appli pour les films, une autre pour les jeux. Nook réunit tout au même endroit : jeux, films, séries, animés, mangas et livres.
 
-L'application demande un compte : tout ce qu'on y range est personnel, et le partage suppose de savoir qui range quoi.
+Chaque titre a un statut (en attente, en cours, terminé) qui se change en un geste. On voit ainsi d'un coup d'œil ce qu'on a fini et ce qu'on veut lancer ensuite.
 
-## Le choix du mobile
+## Entre proches
 
-Nook est d'abord une application de canapé : on l'ouvre pour cocher un épisode, pas pour administrer un catalogue. Tout en découle.
+Nook n'est pas un réseau social. On peut suivre le profil de ses amis pour voir ce qu'ils regardent ou jouent, mais rien de tout ça ne s'affiche dans sa propre bibliothèque. Il n'y a pas de fil d'actualité et pas de classement entre les membres.
 
-Elle s'installe depuis le navigateur — manifeste web, affichage `standalone`, orientation portrait verrouillée, ouverture directe sur la bibliothèque de jeux. Une fois posée sur l'écran d'accueil, plus rien ne signale un site web. L'interface est construite sur un jeu de variables CSS (surfaces, contenus, états) plutôt que sur des couleurs écrites en dur, ce qui laisse le thème sombre et les états actifs cohérents d'un écran à l'autre.
+Il faut un compte, parce que la bibliothèque est personnelle.
+
+## Une vraie appli sur le téléphone
+
+On ouvre Nook le soir, quelques secondes, pour cocher un épisode. Tout a donc été conçu pour le téléphone d'abord.
+
+Nook s'installe depuis le navigateur, sans passer par un store. Une fois sur l'écran d'accueil, elle s'ouvre en plein écran, directement sur la bibliothèque, comme une application native.
