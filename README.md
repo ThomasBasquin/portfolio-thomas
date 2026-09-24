@@ -29,7 +29,7 @@ src/
   pages/                  index, projets/[slug], 404, status
   scripts/                îlots vanilla (lecture vidéo, compteur de section)
   styles/global.css       système de design (jetons, grille 12 colonnes)
-  lib/site.ts             profil, textes à propos, contact
+  lib/site.ts             profil, petits projets, compétences, contact
   lib/colors.ts           dérivations d'accent calculées au build (AA garanti)
 scripts/capture.mjs       pipeline Playwright + ffmpeg des médias projet
 public/

@@ -5,7 +5,7 @@ import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import ProjectShowcase from "../components/ProjectShowcase.astro";
 import { accentRoles } from "../lib/colors";
-import { SITE, ABOUT } from "../lib/site";
+import { SITE, SIDE_PROJECTS, SKILLS } from "../lib/site";
 
 const projects = (await getCollection("projects")).sort(
   (a, b) => a.data.order - b.data.order
@@ -51,16 +51,33 @@ const projects = (await getCollection("projects")).sort(
       <ProjectShowcase project={project} index={i} />
     ))}
 
-    <section class="about container grid" id="a-propos" aria-labelledby="apropos-titre">
-      <h2 id="apropos-titre">À propos</h2>
-      <div class="about-prose">
-        {ABOUT.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
-      </div>
-      <dl class="practices" aria-label="Ce que je pratique au quotidien">
-        {ABOUT.practices.map(({ label, items }) => (
+    <section class="band container grid" id="petits-projets" aria-labelledby="petits-titre">
+      <h2 id="petits-titre">Petits projets</h2>
+      <ul class="side-list">
+        {SIDE_PROJECTS.map((project) => (
+          <li>
+            <a href={project.href} rel="noopener" target="_blank">
+              <span class="side-name">
+                {project.name} <span aria-hidden="true">↗</span>
+              </span>
+              <span class="side-desc">{project.description}</span>
+              <span class="side-meta micro">
+                <span>{project.stack}</span>
+                <span>{project.year}</span>
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="band container grid" id="competences" aria-labelledby="competences-titre">
+      <h2 id="competences-titre">Compétences</h2>
+      <dl class="skills">
+        {SKILLS.map(({ label, items }) => (
           <div>
             <dt class="micro">{label}</dt>
-            <dd>{items}</dd>
+            {items.map((item) => <dd>{item}</dd>)}
           </div>
         ))}
       </dl>

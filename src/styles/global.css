@@ -753,16 +753,17 @@ main {
 }
 
 /* ==========================================================================
-   À propos — bande large qui casse le rythme des sections projet
+   Bandes secondaires — petits projets et compétences, sous les sections
+   plein écran : le titre tient dans la marge, le contenu dans la colonne.
    ========================================================================== */
 
-.about {
+.band {
   padding-block: var(--band);
   border-top: 1px solid var(--line);
 }
 
-.about h2 {
-  grid-column: 1 / 3;
+.band h2 {
+  grid-column: 1 / 4;
   font-size: var(--fs-micro);
   font-family: var(--font-mono);
   font-weight: 400;
@@ -772,49 +773,93 @@ main {
   padding-top: 0.5rem;
 }
 
-.about-prose {
-  grid-column: 4 / 12;
+.band > :not(h2) {
+  grid-column: 4 / -1;
+}
+
+.side-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+
+.side-list a {
   display: grid;
-  gap: 1.25rem;
+  grid-template-columns: minmax(0, 14rem) minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 0.5rem clamp(1rem, 3vw, 2.5rem);
+  padding-block: 1.35rem;
+  border-bottom: 1px solid var(--line);
+  text-decoration: none;
+  transition: background-color 180ms ease-out;
+}
+
+.side-list a:hover,
+.side-list a:focus-visible {
+  background: color-mix(in oklab, var(--accent) 7%, transparent);
+}
+
+.side-name {
+  font-family: var(--font-display);
+  font-weight: 560;
+  font-size: 1.15rem;
+  letter-spacing: -0.015em;
+}
+
+.side-name span {
+  color: var(--ink-2);
+  font-size: 0.85em;
+}
+
+.side-desc {
+  color: var(--ink-2);
+  max-width: 56ch;
   text-wrap: pretty;
 }
 
-.about-prose p:first-child {
-  font-size: clamp(1.4rem, 1.05rem + 1.6vw, 2.35rem);
-  font-family: var(--font-display);
-  font-weight: 560;
-  letter-spacing: -0.022em;
-  line-height: 1.18;
-  max-width: 24ch;
-}
-
-.about-prose p + p {
-  color: var(--ink-2);
-  max-width: 58ch;
-}
-
-.practices {
-  grid-column: 1 / -1;
-  margin: clamp(2.5rem, 6vh, 4rem) 0 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+.side-meta {
+  display: flex;
   gap: 1.5rem;
+  white-space: nowrap;
 }
 
-.practices > div {
-  border-top: 1px solid var(--line);
-  padding: 1.15rem 1rem 0 0;
+@media (max-width: 48rem) {
+  .side-list a {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
-.practices dt {
-  color: var(--accent-ink);
-  margin-bottom: 0.4rem;
-}
-
-.practices dd {
+.skills {
   margin: 0;
-  font-size: 0.9rem;
-  color: var(--ink-2);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2.25rem var(--gutter);
+}
+
+/* Six groupes : trois colonnes ou deux, jamais une rangée orpheline. */
+@media (min-width: 48rem) {
+  .skills {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.skills > div {
+  border-top: 1px solid var(--line);
+  padding-top: 1.1rem;
+  display: grid;
+  gap: 0.35rem;
+  align-content: start;
+}
+
+.skills dt {
+  color: var(--accent-ink);
+  margin-bottom: 0.45rem;
+}
+
+.skills dd {
+  margin: 0;
+  font-size: 1rem;
   line-height: 1.45;
 }
 
