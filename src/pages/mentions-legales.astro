@@ -1,0 +1,77 @@
+---
+import Base from "../layouts/Base.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import { SITE } from "../lib/site";
+---
+
+<Base
+  title={`Mentions légales — ${SITE.name}`}
+  description="Éditeur, hébergement et données personnelles du site thomasbasquin.fr."
+>
+  <SiteHeader home={false} />
+  <main id="contenu">
+    <div class="legal container">
+      <a class="back-link micro" href="/">← Accueil</a>
+      <h1>Mentions légales</h1>
+
+      <section aria-labelledby="legal-editeur">
+        <h2 id="legal-editeur">Éditeur</h2>
+        <p>
+          Ce site est un portfolio personnel, sans activité commerciale. Il est
+          édité par {SITE.name}, qui en est aussi le responsable de la
+          publication.
+        </p>
+        <p>Contact : <a href={`mailto:${SITE.email}`}>{SITE.email}</a></p>
+      </section>
+
+      <section aria-labelledby="legal-hebergement">
+        <h2 id="legal-hebergement">Hébergement</h2>
+        <p>
+          Hetzner Online GmbH<br />
+          Industriestr. 25, 91710 Gunzenhausen, Allemagne<br />
+          +49 9831 505-0 · <a href="https://www.hetzner.com" rel="noopener" target="_blank">hetzner.com</a>
+        </p>
+        <p>
+          Le trafic passe par le réseau de Cloudflare, Inc., 101 Townsend St,
+          San Francisco, CA 94107, États-Unis.
+        </p>
+      </section>
+
+      <section aria-labelledby="legal-donnees">
+        <h2 id="legal-donnees">Données personnelles</h2>
+        <p>
+          Le site ne dépose aucun cookie, n'utilise aucun outil de statistiques
+          et aucun traceur publicitaire.
+        </p>
+        <p>
+          Comme tout serveur web, il enregistre des journaux techniques (adresse
+          IP, page demandée, date et navigateur) pour assurer son bon
+          fonctionnement et sa sécurité. Ces journaux sont supprimés
+          automatiquement au bout de 14 jours et ne sont jamais transmis à des
+          tiers.
+        </p>
+        <p>
+          Pour toute question sur ces données, ou pour exercer vos droits
+          d'accès et de suppression, écrivez à{" "}
+          <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.
+        </p>
+      </section>
+
+      <section aria-labelledby="legal-contenus">
+        <h2 id="legal-contenus">Contenus</h2>
+        <p>
+          Les textes et le code de ce site sont de {SITE.name}. Les sites
+          présentés appartiennent à leurs propriétaires respectifs et sont
+          montrés avec leur accord. Pokémon
+          et les noms associés sont des marques de Nintendo, Creatures Inc. et
+          GAME FREAK inc. ; le Pokédex présenté ici est un projet personnel,
+          sans lien avec ces sociétés.
+        </p>
+      </section>
+    </div>
+  </main>
+  <div class="container grid outro-footer">
+    <SiteFooter home={false} />
+  </div>
+</Base>

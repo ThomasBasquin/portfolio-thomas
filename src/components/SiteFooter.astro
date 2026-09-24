@@ -17,8 +17,9 @@ const year = new Date().getFullYear();
     </p>
     <nav class="foot-right" aria-label="Liens de pied de page">
       <a href={SITE.github} rel="me noopener" target="_blank">GitHub</a>
-      <a href="/status">Statut des sites</a>
-      <a href={home ? "#haut" : "/"}>Remonter</a>
+      <a href="/status">Statut<span class="foot-long"> des sites</span></a>
+      <a href="/mentions-legales">Mentions légales</a>
+      <a class="foot-top" href={home ? "#haut" : "/"}>Remonter</a>
     </nav>
   </div>
 </footer>
