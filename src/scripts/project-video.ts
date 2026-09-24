@@ -9,6 +9,9 @@
 
 export {};
 
+/** Doit suivre la transition d'opacité de `.device-screen video`. */
+const FADE_MS = 300;
+
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 const saveData =
   (navigator as Navigator & { connection?: { saveData?: boolean } }).connection
@@ -44,9 +47,30 @@ function init(): void {
     void video.play().catch(() => {});
   };
 
+  // `playing` part avant que la première image soit peinte : révéler la vidéo
+  // à ce moment laisserait voir un cadre vide ou l'image précédente.
+  const reveal = (video: HTMLVideoElement): void => {
+    if (typeof video.requestVideoFrameCallback === "function") {
+      video.requestVideoFrameCallback(() => {
+        if (!video.paused) video.classList.add("is-playing");
+      });
+    } else {
+      video.classList.add("is-playing");
+    }
+  };
+
+  // La boucle démarre sur l'image exacte du poster : la rembobiner une fois
+  // masquée garantit que chaque reprise enchaîne sans saut visible.
+  const rewind = (video: HTMLVideoElement): void => {
+    video.classList.remove("is-playing");
+    window.setTimeout(() => {
+      if (video.paused) video.currentTime = 0;
+    }, FADE_MS);
+  };
+
   for (const video of videos) {
-    video.addEventListener("playing", () => video.classList.add("is-playing"));
-    video.addEventListener("pause", () => video.classList.remove("is-playing"));
+    video.addEventListener("playing", () => reveal(video));
+    video.addEventListener("pause", () => rewind(video));
   }
 
   // Câblage des sources à l'approche — preload="none" garantit qu'aucune

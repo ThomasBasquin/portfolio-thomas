@@ -30,6 +30,9 @@ const VIEWPORT = {
 };
 const LOOP_SECONDS = 5;
 const MAX_LOOP_BYTES = 1_500_000;
+// Plan fixe sur l'écran du poster en tête de boucle : la vidéo apparaît en
+// fondu, il faut que ce fondu se fasse sur une image immobile.
+const HOLD_MS = 600;
 
 /* -------------------------------------------------------------------------
    Configuration par projet
@@ -45,12 +48,21 @@ const SCENARIOS = {
     // fige pour que deux exécutions donnent la même image.
     prepare: (page) =>
       page.addInitScript(() => sessionStorage.setItem("theme", "light")),
-    act: (page) => smoothScroll(page, 0, 0.85),
-    stills: [0.35, 0.7],
-  },
-  "martin-basquin": {
-    act: (page) => smoothScroll(page, 0, 0.9),
-    stills: [0.4, 0.75],
+    // En mobile la page fait trois écrans et demi : s'arrêter à l'entrée des
+    // publics garde un défilement lisible sur cinq secondes.
+    act: (page) => smoothScroll(page, 0, 0.62),
+    // La boucle montre déjà l'accueil en mobile : la galerie passe au format
+    // bureau et va chercher le reste du site, une information par page. Le
+    // contact est pris de nuit pour montrer le thème circadien.
+    gallery: {
+      device: "browser",
+      shots: [
+        { path: "/seance", y: 600 },
+        { path: "/pour-qui", y: 730 },
+        { path: "/a-propos", y: 600 },
+        { path: "/contact", y: 480, theme: "dark" },
+      ],
+    },
   },
   pokedex: {
     // La page ne défile pas : ce qui vit, c'est la recherche — chaque résultat
@@ -82,22 +94,33 @@ const SCENARIOS = {
       });
       await page.fill("#login-email", email);
       await page.fill("#login-password", password);
+      // Redirection côté client : aucun événement `load` ne suit la connexion.
       await Promise.all([
         page.waitForURL((url) => !url.pathname.startsWith("/login"), {
           timeout: 20000,
+          waitUntil: "commit",
         }),
         page.click('button[type="submit"]'),
       ]);
+      await settle(page);
+      // La fenêtre « Nouveautés » s'ouvre tant que le compte n'a pas vu la
+      // dernière entrée ; la fermer l'enregistre côté serveur, une fois pour toutes.
+      const dismiss = page.getByRole("button", { name: "Compris" });
+      if (await dismiss.isVisible().catch(() => false)) {
+        await dismiss.click();
+        await page.waitForTimeout(600);
+      }
       return true;
     },
-    // La bibliothèque tient dans un écran (72 px de défilement) : faire défiler
-    // ne montrerait rien. Ce qui vaut d'être montré, c'est l'argument même du
-    // produit — jeux, films, séries et animés au même endroit — donc on
-    // parcourt les quatre onglets, chacun repeignant l'écran de ses jaquettes.
+    // La bibliothèque tient dans un écran : faire défiler ne montrerait rien.
+    // Ce qui vaut d'être montré, c'est l'argument même du produit — tous les
+    // médias au même endroit — donc on parcourt les onglets, chacun repeignant
+    // l'écran de ses jaquettes, et on revient aux jeux pour boucler sans saut.
     act: async (page) => {
-      for (const tab of ["/movies", "/tv", "/anime", "/games"]) {
+      const tabs = ["/movies", "/tv", "/anime", "/livres", "/games"];
+      for (const tab of tabs) {
         await openTab(page, tab);
-        await page.waitForTimeout(LOOP_SECONDS * 230);
+        await page.waitForTimeout((LOOP_SECONDS * 1000) / tabs.length);
       }
     },
     stills: async (page, shoot) => {
@@ -193,6 +216,87 @@ async function scrollToRatio(page, ratio) {
   await page.waitForTimeout(600);
 }
 
+/**
+ * Le screencast de Playwright n'émet d'images que lorsque la page change :
+ * sa durée ne suit pas l'horloge, et un point de coupe calculé en temps réel
+ * tombe à côté d'une seconde. On marque donc le départ dans l'image même —
+ * un aplat blanc pur, qu'aucun site capturé n'affiche plein écran — et
+ * ffmpeg le retrouve.
+ */
+async function flashMarker(page) {
+  await page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        const veil = document.createElement("div");
+        veil.style.cssText =
+          "position:fixed;inset:0;z-index:2147483647;background:#fff;pointer-events:none";
+        document.documentElement.append(veil);
+        setTimeout(() => {
+          veil.remove();
+          requestAnimationFrame(() => requestAnimationFrame(resolve));
+        }, 400);
+      })
+  );
+}
+
+/** Fin du dernier aplat blanc — about:blank, au tout début, en est un aussi. */
+async function markerEnd(file) {
+  const { stderr } = await run("ffmpeg", [
+    "-hide_banner",
+    "-i", file,
+    "-vf", "negate,blackdetect=d=0.2:pix_th=0.02:pic_th=0.995",
+    "-an",
+    "-f", "null",
+    "-",
+  ]);
+  const ends = [...stderr.matchAll(/black_end:([\d.]+)/g)].map((m) => Number(m[1]));
+  if (ends.length === 0) throw new Error("repère de départ introuvable dans l'enregistrement");
+  // Une image de marge : le fondu de retrait de l'aplat ne doit pas apparaître.
+  return ends.at(-1) + 0.04;
+}
+
+/**
+ * Captures fixes prises dans un autre format que la boucle, sur d'autres
+ * pages que l'accueil. Le défilement se fait par paliers : les sites qui
+ * révèlent leur contenu à l'entrée dans le viewport resteraient vides sinon.
+ */
+async function captureGallery(browser, url, gallery, outDir) {
+  const pngs = [];
+  for (const [i, shot] of gallery.shots.entries()) {
+    const context = await browser.newContext({
+      viewport: VIEWPORT[gallery.device],
+      deviceScaleFactor: 2,
+      locale: "fr-FR",
+      timezoneId: "Europe/Paris",
+      reducedMotion: "no-preference",
+    });
+    await context.addInitScript(
+      (theme) => sessionStorage.setItem("theme", theme),
+      shot.theme ?? "light"
+    );
+    const page = await context.newPage();
+    try {
+      await page.goto(new URL(shot.path, url).href, {
+        waitUntil: "domcontentloaded",
+        timeout: 30000,
+      });
+      await settle(page);
+      for (let y = 0; y <= shot.y; y += 200) {
+        await page.evaluate((top) => window.scrollTo({ top, behavior: "instant" }), y);
+        await page.waitForTimeout(120);
+      }
+      await page.evaluate((top) => window.scrollTo({ top, behavior: "instant" }), shot.y);
+      await page.waitForTimeout(1400);
+      const png = path.join(outDir, `capture-${i + 1}.png`);
+      await page.screenshot({ path: png });
+      pngs.push(png);
+    } finally {
+      await context.close();
+    }
+  }
+  return pngs;
+}
+
 async function toWebp(pngPath, webpPath, maxWidth) {
   await run("ffmpeg", [
     "-y",
@@ -208,13 +312,13 @@ async function toWebp(pngPath, webpPath, maxWidth) {
  * Ré-encode la capture brute de Playwright en webm (VP9) + mp4 (h264),
  * muettes, coupées à la fenêtre utile et redescendues sous le budget de poids.
  */
-async function encodeLoop(sourceVideo, offsetSeconds, outDir, device) {
+async function encodeLoop(sourceVideo, offsetSeconds, seconds, outDir, device) {
   const height = device === "phone" ? 960 : 720;
   const common = [
     "-y",
     "-loglevel", "error",
-    "-ss", offsetSeconds.toFixed(2),
-    "-t", String(LOOP_SECONDS),
+    "-ss", offsetSeconds.toFixed(3),
+    "-t", seconds.toFixed(3),
     "-i", sourceVideo,
     "-an",
     "-vf", `scale=-2:'min(${height},ih)':flags=lanczos`,
@@ -270,7 +374,6 @@ async function capture(browser, project) {
     recordVideo: { dir: videoDir, size: viewport },
   });
 
-  const contextStart = Date.now();
   const page = await context.newPage();
 
   try {
@@ -291,20 +394,19 @@ async function capture(browser, project) {
     }
 
     await settle(page);
+    const landing = page.url();
 
-    // Poster et captures fixes — pris avant l'enregistrement utile pour que
-    // la boucle démarre sur une page déjà chaude.
-    const png = path.join(outDir, "_shot.png");
-    const maxWidth = device === "phone" ? 900 : 1600;
+    // Conversion webp différée : entre le poster et le départ de la boucle,
+    // une page animée ne doit pas avoir le temps de changer.
+    const shots = [];
     let shotIndex = 0;
     const shoot = async (name) => {
+      const png = path.join(outDir, `${name ?? `capture-${++shotIndex}`}.png`);
       await page.screenshot({ path: png });
-      await toWebp(png, path.join(outDir, `${name ?? `capture-${++shotIndex}`}.webp`), maxWidth);
+      shots.push(png);
     };
 
-    await shoot("poster");
-
-    const stills = scenario.stills ?? [0.35, 0.7];
+    const stills = scenario.gallery ? [] : (scenario.stills ?? [0.35, 0.7]);
     if (typeof stills === "function") {
       await stills(page, shoot);
     } else {
@@ -312,19 +414,39 @@ async function capture(browser, project) {
         await scrollToRatio(page, ratio);
         await shoot();
       }
-      await scrollToRatio(page, 0);
     }
-    await rm(png, { force: true });
 
-    await page.waitForTimeout(400);
-    const loopStart = Date.now();
+    // Les captures ont déplacé la page : on revient à l'état d'arrivée pour
+    // que le poster et la première image de la boucle soient le même écran.
+    // Recharger la même URL restaure la position de défilement.
+    await page.goto(landing, { waitUntil: "domcontentloaded", timeout: 30000 });
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+    await settle(page);
+
+    await flashMarker(page);
+    await page.waitForTimeout(250);
+    await shoot("poster");
+    await page.waitForTimeout(HOLD_MS);
+    const actStart = Date.now();
     await scenario.act(page);
-    await page.waitForTimeout(400);
+    const actSeconds = (Date.now() - actStart) / 1000;
+    await page.waitForTimeout(300);
 
-    const offset = Math.max(0, (loopStart - contextStart) / 1000);
     const videoPath = await page.video().path();
     await context.close();
-    await encodeLoop(videoPath, offset, outDir, device);
+    const offset = await markerEnd(videoPath);
+    await encodeLoop(videoPath, offset, HOLD_MS / 1000 + actSeconds, outDir, device);
+
+    const widthFor = (kind) => (kind === "phone" ? 900 : 1600);
+    const converted = shots.map((png) => [png, widthFor(device)]);
+    if (scenario.gallery) {
+      const gallery = await captureGallery(browser, url, scenario.gallery, outDir);
+      for (const png of gallery) converted.push([png, widthFor(scenario.gallery.device)]);
+    }
+    for (const [png, maxWidth] of converted) {
+      await toWebp(png, png.replace(/\.png$/, ".webp"), maxWidth);
+      await rm(png);
+    }
     await rm(videoDir, { recursive: true, force: true });
     return true;
   } catch (error) {
@@ -366,7 +488,11 @@ async function main() {
   try {
     for (const project of projects) {
       console.log(`→ ${project.slug} (${project.device}) ${project.url}`);
-      if (await capture(browser, project)) done.push(project.slug);
+      try {
+        if (await capture(browser, project)) done.push(project.slug);
+      } catch (error) {
+        console.warn(`  ✗ ${project.slug} : ${error.message.split("\n")[0]}`);
+      }
     }
   } finally {
     await browser.close();

@@ -54,6 +54,8 @@ NOOK_PASSWORD=...
 
 Sans ces variables, le script capture l'écran de connexion et le signale — donc jamais de chemin d'image mort, mais l'application elle-même n'est pas montrée. Utiliser de préférence un compte de démonstration garni de contenu présentable : **ce qui est capturé devient public**.
 
+**Poster et boucle sont le même écran.** Le poster est pris juste avant la boucle, sur la page remise dans son état d'arrivée, et la boucle commence par un plan fixe. Le point de coupe n'est pas calculé à l'horloge (le screencast de Playwright n'émet d'images que lorsque la page change) : un aplat blanc est affiché juste avant le poster et `ffmpeg` le repère dans l'enregistrement. Côté site, la vidéo n'apparaît qu'une fois sa première image peinte, et elle est rembobinée quand on la quitte. Aucun raccord n'est donc visible au démarrage.
+
 **Ajuster une boucle.** Le scénario de chaque projet est défini dans `SCENARIOS`, en haut de `scripts/capture.mjs` : défilement animé pour les sites qui défilent, interactions réelles pour les applications (Pokédex utilise sa recherche, chaque résultat repeignant l'écran). Une page qui ne défile pas et n'a pas de scénario donne une boucle figée — c'est le signe qu'il faut lui en écrire un.
 
 ## Ajouter un projet
