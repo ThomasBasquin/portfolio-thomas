@@ -598,7 +598,6 @@ main {
   display: grid;
   align-content: center;
   padding-block: var(--band);
-  border-top: 1px solid var(--line-soft);
 }
 
 .showcase-text {
