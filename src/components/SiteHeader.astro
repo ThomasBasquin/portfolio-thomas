@@ -10,7 +10,7 @@ const { home = true } = Astro.props;
 const anchor = (id: string) => (home ? `#${id}` : `/#${id}`);
 ---
 
-<header class="site-header" data-header>
+<header class="site-header" data-header data-home={home ? "" : undefined}>
   <div class="container">
     <a class="site-logo" href={home ? "#haut" : "/"} aria-label={SITE.name}>
       <span class="logo-long">{SITE.name}</span>

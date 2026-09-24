@@ -4,7 +4,8 @@
  * lisibles (WCAG AA) sur le fond du site.
  */
 
-const BG_HEX = "#0a0a0a";
+/** Doit suivre `--bg` : les seuils de contraste sont calculés contre lui. */
+const BG_HEX = "#0c0d10";
 
 type Oklch = { l: number; c: number; h: number };
 
