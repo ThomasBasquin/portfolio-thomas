@@ -10,7 +10,7 @@ export const SITE = {
     "Portfolio de Thomas Basquin, développeur web. Sites et applications conçus de bout en bout : interface, données, hébergement et mise en production.",
   tagline:
     "Développeur web. Je conçois des applications de bout en bout, du prototype à la mise en production.",
-  email: "thomas.basquin2@gmail.com",
+  email: "contact@basquin.eu",
   github: "https://github.com/ThomasBasquin",
   location: "France",
 } as const;
