@@ -27,7 +27,7 @@ ORDER=(
   "martinbasquin.thomasbasquin.fr"
   "nook.thomasbasquin.fr"
   "pokedex.thomasbasquin.fr"
-  "finsim.thomasbasquin.fr"
+  "runway.thomasbasquin.fr"
   "notes.thomasbasquin.fr"
   "stats.thomasbasquin.fr"
   "ressources.thomasbasquin.fr"
@@ -38,7 +38,7 @@ ORDER=(
 declare -A LABELS=(
   ["thomasbasquin.fr"]="Portfolio"
   ["pokedex.thomasbasquin.fr"]="Pokédex"
-  ["finsim.thomasbasquin.fr"]="Finsim"
+  ["runway.thomasbasquin.fr"]="Runway"
   ["martinbasquin.thomasbasquin.fr"]="Martin Basquin"
   ["mariewach.fr"]="Marie Wach"
   ["nook.thomasbasquin.fr"]="Nook"
@@ -52,7 +52,7 @@ declare -A LABELS=(
 # Domaines dont le libellé n'affiche pas les ports surveillés entre parenthèses.
 NO_PORT_SUFFIX=(
   "nook.thomasbasquin.fr"
-  "finsim.thomasbasquin.fr"
+  "runway.thomasbasquin.fr"
 )
 
 contains() {
