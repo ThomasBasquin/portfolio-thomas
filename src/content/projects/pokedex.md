@@ -16,7 +16,7 @@ media:
     mp4: "/media/pokedex/loop.mp4"
   gallery:
     - src: "/media/pokedex/capture-1.webp"
-      caption: "Dracaufeu : la page prend la couleur du type Feu"
+      caption: "Bulbizarre : la page prend la couleur du type Plante"
     - src: "/media/pokedex/capture-2.webp"
       caption: "Ectoplasma : la couleur du type Spectre"
 featured: false

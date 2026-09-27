@@ -65,23 +65,25 @@ const SCENARIOS = {
     },
   },
   pokedex: {
+    // L'accueil du site est Bulbizarre, vert comme l'accent de Marie Wach :
+    // le poster part de Dracaufeu, rouge comme l'accent du projet.
+    opening: async (page) => {
+      await searchPokemon(page, "Dracaufeu");
+      await page.waitForTimeout(1400);
+    },
     // La page ne défile pas : ce qui vit, c'est la recherche — chaque résultat
     // repeint l'écran entier à la couleur du type de la créature.
     act: async (page) => {
-      await searchPokemon(page, "Dracaufeu");
+      await searchPokemon(page, "Bulbizarre");
       await page.waitForTimeout(1600);
       await searchPokemon(page, "Mewtwo");
       await page.waitForTimeout(1400);
     },
     stills: async (page, shoot) => {
-      await searchPokemon(page, "Dracaufeu");
-      await page.waitForTimeout(1400);
       await shoot();
       await searchPokemon(page, "Ectoplasma");
       await page.waitForTimeout(1400);
       await shoot();
-      await searchPokemon(page, "Bulbizarre");
-      await page.waitForTimeout(1200);
     },
   },
   nook: {
@@ -201,7 +203,7 @@ function openTab(page, href) {
 async function searchPokemon(page, name) {
   const input = page.locator("input").first();
   await input.fill("", { force: true });
-  await input.pressSequentially(name, { delay: 55 });
+  await input.pressSequentially(name, { delay: 110 });
   await input.press("Enter");
 }
 
@@ -422,6 +424,7 @@ async function capture(browser, project) {
     await page.goto(landing, { waitUntil: "domcontentloaded", timeout: 30000 });
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
     await settle(page);
+    if (scenario.opening) await scenario.opening(page);
 
     await flashMarker(page);
     await page.waitForTimeout(250);
