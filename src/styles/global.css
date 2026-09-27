@@ -60,6 +60,9 @@
   --gutter: clamp(1.25rem, 3.5vw, 2.5rem);
   --band: clamp(4.5rem, 11vh, 8rem);
   --radius: 12px;
+  /* Coins d'écran d'un iPhone 12 à 14 (47,33 pt sur 390 × 844 pt), le format
+     des captures : valable pour toute boîte qui a exactement ces proportions. */
+  --phone-corner: 12.136% / 5.608%;
 
   --z-header: 20;
   --z-skip: 100;
@@ -165,6 +168,10 @@ main {
 }
 
 @media (max-width: 60rem) {
+  :root {
+    --band: clamp(3.5rem, 8vh, 4.5rem);
+  }
+
   .grid {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -280,6 +287,8 @@ main {
 }
 
 .header-links a {
+  /* Libellés de 12 px : la zone tactile s'étend sur toute la hauteur de la barre. */
+  padding-block: 1.1rem;
   text-decoration: none;
 }
 
@@ -367,7 +376,17 @@ main {
   transition: background-color 180ms ease-out;
 }
 
-.hero-index a:hover,
+/* Sans `hover: hover`, un tap laisse la ligne surlignée après le défilement. */
+@media (hover: hover) {
+  .hero-index a:hover {
+    background: color-mix(in oklab, var(--accent) 8%, transparent);
+  }
+
+  .hero-index a:hover .idx-num {
+    transform: translateX(0.4rem);
+  }
+}
+
 .hero-index a:focus-visible {
   background: color-mix(in oklab, var(--accent) 8%, transparent);
 }
@@ -382,7 +401,6 @@ main {
 
 /* L'indentation au survol passe par transform : animer le padding ferait
    recalculer la mise en page de la ligne à chaque frame. */
-.hero-index a:hover .idx-num,
 .hero-index a:focus-visible .idx-num {
   transform: translateX(0.4rem);
 }
@@ -542,20 +560,37 @@ main {
   aspect-ratio: 16 / 9;
 }
 
-/* Téléphone */
+/* Téléphone — l'écran est un conteneur de requête pour que ses coins suivent
+   ceux d'un iPhone (12,136 % de la largeur) à toute taille. Le châssis est
+   dessiné par ::before, seul à pouvoir lire la largeur de ce conteneur, et
+   reste concentrique : rayon de l'écran + épaisseur du bord. */
 .device--phone {
-  border-radius: 2.25rem;
-  padding: 0.6rem;
+  --frame-pad: 0.6rem;
+  container-type: inline-size;
+  isolation: isolate;
+  padding: var(--frame-pad);
+  border: 0;
+  background: none;
   aspect-ratio: 390 / 844;
   height: min(80svh, 44rem);
   width: auto;
   overflow: visible;
 }
 
+.device--phone::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border: 1px solid var(--line);
+  border-radius: calc(12.136cqw + var(--frame-pad));
+  background: var(--surface);
+}
+
 .device--phone::after {
   content: "";
   position: absolute;
-  top: 0.16rem;
+  top: 0.18rem;
   left: 50%;
   transform: translateX(-50%);
   width: 2.75rem;
@@ -566,25 +601,21 @@ main {
 
 .device--phone .device-screen {
   height: 100%;
-  border-radius: 1.7rem;
+  border-radius: 12.136cqw;
 }
 
-/* Sous 60rem, un téléphone dessiné dans un téléphone n'a plus de sens. */
+/* Sous 60rem, un téléphone dessiné dans un téléphone n'a plus de sens : il
+   ne reste que l'écran et un filet. */
 @media (max-width: 60rem) {
   .device--phone {
+    --frame-pad: 1px;
     height: auto;
     width: min(100%, 18rem);
-    padding: 0;
-    border-radius: var(--radius);
     margin-inline: auto;
   }
 
   .device--phone::after {
     display: none;
-  }
-
-  .device--phone .device-screen {
-    border-radius: calc(var(--radius) - 1px);
   }
 }
 
@@ -704,6 +735,12 @@ main {
   .showcase-meta {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  /* Le rôle est la ligne longue : pleine largeur, pour que pile et année
+     partagent la rangée suivante au lieu de laisser une case orpheline. */
+  .showcase-meta > div:first-child {
+    grid-column: 1 / -1;
+  }
 }
 
 .showcase-meta dd {
@@ -795,7 +832,12 @@ main {
   transition: background-color 180ms ease-out;
 }
 
-.side-list a:hover,
+@media (hover: hover) {
+  .side-list a:hover {
+    background: color-mix(in oklab, var(--accent) 7%, transparent);
+  }
+}
+
 .side-list a:focus-visible {
   background: color-mix(in oklab, var(--accent) 7%, transparent);
 }
@@ -950,6 +992,9 @@ main {
 }
 
 .site-footer a {
+  /* Zone tactile agrandie sans changer l'interlignage du pied de page. */
+  padding-block: 0.6rem;
+  margin-block: -0.6rem;
   text-decoration: none;
 }
 
@@ -1131,10 +1176,17 @@ main {
 }
 
 /* Des captures de téléphone étirées sur une demi-page deviendraient des
-   colonnes d'un écran et demi de haut : on garde l'échelle du cadre. */
+   colonnes d'un écran et demi de haut : on garde l'échelle du cadre. Sur
+   téléphone, deux par rangée : l'agrandissement est à un tap. */
 .proj-gallery--phone {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 18rem));
   justify-content: center;
+}
+
+@media (max-width: 40rem) {
+  .proj-gallery--phone {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .proj-gallery figure {
@@ -1150,6 +1202,11 @@ main {
   border-radius: var(--radius);
   background: var(--surface);
   border: 1px solid var(--line);
+}
+
+.proj-gallery--phone .gallery-zoom,
+.proj-gallery--phone img {
+  border-radius: var(--phone-corner);
 }
 
 .proj-nav {
@@ -1187,6 +1244,7 @@ main {
 @media (max-width: 40rem) {
   .proj-nav {
     grid-template-columns: 1fr;
+    padding-bottom: 0;
   }
 
   .proj-nav .nav-next {
@@ -1373,12 +1431,23 @@ main {
     min-height: 0;
   }
 
-  .showcase[data-side="left"] .showcase-device {
-    order: 0;
+  /* Le texte se déplie dans la grille pour que l'écran vienne juste après
+     le titre : on voit le produit avant d'en lire la fiche. */
+  .showcase-text {
+    display: contents;
+  }
+
+  .showcase .grid {
+    row-gap: 1.15rem;
+  }
+
+  .showcase-text > :nth-child(-n + 3),
+  .showcase[data-side] .showcase-device {
+    order: -1;
   }
 
   .showcase-device {
-    margin-top: clamp(2rem, 5vh, 3rem);
+    margin-block: 1.25rem 1rem;
   }
 }
 
@@ -1394,8 +1463,10 @@ main {
   transition: border-color 160ms ease-out;
 }
 
-.gallery-zoom:hover img {
-  border-color: color-mix(in oklab, var(--accent-ink) 55%, var(--line));
+@media (hover: hover) {
+  .gallery-zoom:hover img {
+    border-color: color-mix(in oklab, var(--accent-ink) 55%, var(--line));
+  }
 }
 
 html:has(.lightbox[open]) {
@@ -1443,6 +1514,10 @@ html:has(.lightbox[open]) {
   border: 1px solid var(--line);
   background: var(--surface);
   cursor: zoom-out;
+}
+
+.lightbox--phone .lightbox-img {
+  border-radius: var(--phone-corner);
 }
 
 .lightbox-caption {
