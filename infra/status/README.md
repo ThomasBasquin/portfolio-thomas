@@ -14,8 +14,8 @@ mkdir -p /var/www/status-data
 Le reste (units systemd) nécessite root :
 
 ```bash
-sudo ln -s /home/thomas/projects/thomas-homepage/infra/status/vps-status-check.service /etc/systemd/system/
-sudo ln -s /home/thomas/projects/thomas-homepage/infra/status/vps-status-check.timer /etc/systemd/system/
+sudo ln -s /home/thomas/projects/portfolio-thomas/infra/status/vps-status-check.service /etc/systemd/system/
+sudo ln -s /home/thomas/projects/portfolio-thomas/infra/status/vps-status-check.timer /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable --now vps-status-check.timer
 ```
