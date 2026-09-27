@@ -35,7 +35,7 @@ export const SIDE_PROJECTS = [
 ] as const;
 
 export const SKILLS = [
-  { label: "Front-end", items: ["React", "Next.js", "Astro", "Tailwind CSS", "TanStack Query"] },
+  { label: "Front-end", items: ["React", "Next.js", "SvelteKit", "Astro", "Tailwind CSS", "TanStack Query"] },
   { label: "Langages", items: ["TypeScript", "JavaScript", "HTML et CSS", "Bash", "AutoHotkey"] },
   { label: "Back-end et données", items: ["Node.js", "SQLite", "Drizzle ORM", "Better Auth", "API REST"] },
   { label: "Mobile", items: ["Conception mobile-first", "PWA installable", "Service worker", "Gestes tactiles"] },
