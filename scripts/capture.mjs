@@ -13,7 +13,7 @@
 import { chromium } from "playwright";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { mkdir, readdir, readFile, rm, cp, stat } from "node:fs/promises";
+import { mkdir, readdir, readFile, rm, cp, stat, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -25,11 +25,11 @@ const MEDIA = path.join(ROOT, "public/media");
 const WORK = path.join(ROOT, ".capture-tmp");
 
 const VIEWPORT = {
-  browser: { width: 1440, height: 900 },
+  browser: { width: 1920, height: 1080 },
   phone: { width: 390, height: 844 },
 };
 const LOOP_SECONDS = 5;
-const MAX_LOOP_BYTES = 1_500_000;
+const MAX_LOOP_BYTES = 2_500_000;
 // Plan fixe sur l'écran du poster en tête de boucle : la vidéo apparaît en
 // fondu, il faut que ce fondu se fasse sur une image immobile.
 const HOLD_MS = 600;
@@ -56,6 +56,9 @@ const SCENARIOS = {
     // contact est pris de nuit pour montrer le thème circadien.
     gallery: {
       device: "browser",
+      // Le site tient dans une colonne étroite : en 1920 les captures sont à
+      // moitié vides, et le pied de page remonte dans celle du contact.
+      viewport: { width: 1440, height: 900 },
       shots: [
         { path: "/seance", y: 560 },
         { path: "/pour-qui", y: 600 },
@@ -136,6 +139,55 @@ const SCENARIOS = {
       await page.waitForTimeout(1100);
     },
   },
+  runway: {
+    // Les jeux exigent un compte : le compte de démonstration a une partie en
+    // cours dans chaque simulateur, qu'on ne fait jamais avancer ici pour que
+    // deux exécutions montrent les mêmes chiffres.
+    login: async (page) => {
+      const email = process.env.RUNWAY_EMAIL;
+      const password = process.env.RUNWAY_PASSWORD;
+      if (!email || !password) return false;
+      await page.goto("https://runway.thomasbasquin.fr/login", {
+        waitUntil: "domcontentloaded",
+      });
+      await page.fill('input[name="email"]', email);
+      await page.fill('input[name="password"]', password);
+      await Promise.all([
+        page.waitForURL((url) => !url.pathname.startsWith("/login"), {
+          timeout: 20000,
+        }),
+        page.click("form button.button"),
+      ]);
+      return true;
+    },
+    // La boucle suit le parcours d'un joueur, de l'accueil jusqu'aux courbes
+    // de sa partie, puis revient à l'accueil par le logo pour boucler sans saut.
+    act: async (page) => {
+      await page.waitForTimeout(900);
+      await followLink(page, 'a.card[href="/cfo-heritage"]', /\/cfo-heritage$/);
+      await page.waitForTimeout(1400);
+      await followLink(page, 'a[href^="/cfo-heritage/"]', /\/cfo-heritage\/.+/);
+      await page.waitForTimeout(1200);
+      await page.getByRole("tab", { name: "Historique" }).click();
+      await page.waitForTimeout(2400);
+      await followLink(page, "a.brand", /\/$/);
+      await page.waitForTimeout(400);
+    },
+    stills: async (page, shoot) => {
+      await page.goto("https://runway.thomasbasquin.fr/cfo-heritage", {
+        waitUntil: "domcontentloaded",
+      });
+      await settle(page);
+      await shoot();
+      await openSavedGame(page, "cfo-heritage");
+      await openRunwayTab(page, "Historique");
+      await shoot();
+      await openSavedGame(page, "alpha-fund");
+      await shoot();
+      await openRunwayTab(page, "Marchés");
+      await shoot();
+    },
+  },
 };
 
 /* -------------------------------------------------------------------------
@@ -199,6 +251,27 @@ function openTab(page, href) {
   return page.click(`a[href="${href}"]`, { timeout: 5000 }).catch(() => {});
 }
 
+async function openSavedGame(page, game) {
+  await page.goto(`https://runway.thomasbasquin.fr/${game}`, {
+    waitUntil: "domcontentloaded",
+  });
+  await page.click(`a[href^="/${game}/"]`, { timeout: 10000 });
+  await page.waitForURL(new RegExp(`/${game}/.+`));
+  await settle(page);
+}
+
+async function followLink(page, selector, url) {
+  await Promise.all([page.waitForURL(url), page.click(selector)]);
+  await page.waitForLoadState("networkidle").catch(() => {});
+}
+
+// Le changement d'onglet garde la position de défilement de l'onglet quitté.
+async function openRunwayTab(page, name) {
+  await page.getByRole("tab", { name }).click();
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+  await page.waitForTimeout(1200);
+}
+
 /** Frappe visible plutôt que `fill` : la boucle doit montrer l'usage réel. */
 async function searchPokemon(page, name) {
   const input = page.locator("input").first();
@@ -258,6 +331,67 @@ async function markerEnd(file) {
 }
 
 /**
+ * Enregistrement image par image via le screencast de Chromium, à la densité
+ * de l'écran. L'enregistreur intégré de Playwright filme en 1x et compresse
+ * en VP8 à 1 Mbit/s : la boucle finale serait un ré-encodage d'une source
+ * déjà floue. Ici chaque image est un JPEG quasi intact, horodaté par le
+ * navigateur, et l'assemblage intermédiaire est quasi sans perte.
+ */
+async function startRecording(page, dir, viewport) {
+  const cdp = await page.context().newCDPSession(page);
+  const frames = [];
+  const writes = [];
+  cdp.on("Page.screencastFrame", ({ data, metadata, sessionId }) => {
+    const file = path.join(dir, `frame-${String(frames.length).padStart(5, "0")}.jpg`);
+    frames.push({ file, time: metadata.timestamp });
+    writes.push(writeFile(file, Buffer.from(data, "base64")));
+    cdp.send("Page.screencastFrameAck", { sessionId }).catch(() => {});
+  });
+  await cdp.send("Page.startScreencast", {
+    format: "jpeg",
+    quality: 95,
+    maxWidth: viewport.width * 2,
+    maxHeight: viewport.height * 2,
+  });
+
+  return {
+    async stop() {
+      const stoppedAt = Date.now() / 1000;
+      await cdp.send("Page.stopScreencast");
+      await Promise.all(writes);
+      await cdp.detach().catch(() => {});
+      if (frames.length === 0) throw new Error("aucune image enregistrée");
+
+      // Le screencast n'émet qu'aux changements : chaque image dure jusqu'à
+      // la suivante, la dernière jusqu'à l'arrêt.
+      const list = frames
+        .map(({ file, time }, i) => {
+          const end = frames[i + 1]?.time ?? Math.max(time + 0.1, stoppedAt);
+          return `file '${file}'\nduration ${(end - time).toFixed(4)}`;
+        })
+        .join("\n");
+      const listFile = path.join(dir, "frames.txt");
+      await writeFile(listFile, `${list}\nfile '${frames.at(-1).file}'\n`);
+
+      const out = path.join(dir, "raw.mp4");
+      await run("ffmpeg", [
+        "-y",
+        "-loglevel", "error",
+        "-f", "concat",
+        "-safe", "0",
+        "-i", listFile,
+        "-vf", "fps=30,scale=trunc(iw/2)*2:trunc(ih/2)*2,format=yuv420p",
+        "-c:v", "libx264",
+        "-crf", "8",
+        "-preset", "veryfast",
+        out,
+      ]);
+      return out;
+    },
+  };
+}
+
+/**
  * Captures fixes prises dans un autre format que la boucle, sur d'autres
  * pages que l'accueil. Le défilement se fait par paliers : les sites qui
  * révèlent leur contenu à l'entrée dans le viewport resteraient vides sinon.
@@ -266,7 +400,7 @@ async function captureGallery(browser, url, gallery, outDir) {
   const pngs = [];
   for (const [i, shot] of gallery.shots.entries()) {
     const context = await browser.newContext({
-      viewport: VIEWPORT[gallery.device],
+      viewport: gallery.viewport ?? VIEWPORT[gallery.device],
       deviceScaleFactor: 2,
       locale: "fr-FR",
       timezoneId: "Europe/Paris",
@@ -315,7 +449,7 @@ async function toWebp(pngPath, webpPath, maxWidth) {
  * muettes, coupées à la fenêtre utile et redescendues sous le budget de poids.
  */
 async function encodeLoop(sourceVideo, offsetSeconds, seconds, outDir, device) {
-  const height = device === "phone" ? 960 : 720;
+  const height = device === "phone" ? 960 : 1080;
   const common = [
     "-y",
     "-loglevel", "error",
@@ -328,7 +462,7 @@ async function encodeLoop(sourceVideo, offsetSeconds, seconds, outDir, device) {
   const webm = path.join(outDir, "loop.webm");
   const mp4 = path.join(outDir, "loop.mp4");
 
-  for (const crf of [34, 38, 42]) {
+  for (const crf of [30, 34, 38, 42]) {
     await run("ffmpeg", [
       ...common,
       "-c:v", "libvpx-vp9",
@@ -344,7 +478,7 @@ async function encodeLoop(sourceVideo, offsetSeconds, seconds, outDir, device) {
   await run("ffmpeg", [
     ...common,
     "-c:v", "libx264",
-    "-crf", "28",
+    "-crf", "24",
     "-preset", "slow",
     "-pix_fmt", "yuv420p",
     "-movflags", "+faststart",
@@ -373,7 +507,6 @@ async function capture(browser, project) {
     isMobile: device === "phone",
     hasTouch: device === "phone",
     reducedMotion: "no-preference",
-    recordVideo: { dir: videoDir, size: viewport },
   });
 
   const page = await context.newPage();
@@ -387,7 +520,7 @@ async function capture(browser, project) {
     if (loggedIn === false) {
       console.warn(
         `  ⚠ ${slug} : identifiants absents du .env — seul l'écran de connexion ` +
-          `sera capturé. Renseigner NOOK_EMAIL / NOOK_PASSWORD puis relancer ` +
+          `sera capturé. Renseigner ${slug.toUpperCase()}_EMAIL / ${slug.toUpperCase()}_PASSWORD puis relancer ` +
           `« npm run captures ${slug} » pour montrer l'application elle-même.`
       );
       await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
@@ -426,21 +559,21 @@ async function capture(browser, project) {
     await settle(page);
     if (scenario.opening) await scenario.opening(page);
 
-    await flashMarker(page);
-    await page.waitForTimeout(250);
     await shoot("poster");
-    await page.waitForTimeout(HOLD_MS);
+    const recording = await startRecording(page, videoDir, viewport);
+    await flashMarker(page);
+    await page.waitForTimeout(250 + HOLD_MS);
     const actStart = Date.now();
     await scenario.act(page);
     const actSeconds = (Date.now() - actStart) / 1000;
     await page.waitForTimeout(300);
 
-    const videoPath = await page.video().path();
+    const videoPath = await recording.stop();
     await context.close();
     const offset = await markerEnd(videoPath);
-    await encodeLoop(videoPath, offset, HOLD_MS / 1000 + actSeconds, outDir, device);
+    await encodeLoop(videoPath, offset, (250 + HOLD_MS) / 1000 + actSeconds, outDir, device);
 
-    const widthFor = (kind) => (kind === "phone" ? 900 : 1600);
+    const widthFor = (kind) => (kind === "phone" ? 900 : 1920);
     const converted = shots.map((png) => [png, widthFor(device)]);
     if (scenario.gallery) {
       const gallery = await captureGallery(browser, url, scenario.gallery, outDir);
@@ -448,6 +581,14 @@ async function capture(browser, project) {
     }
     for (const [png, maxWidth] of converted) {
       await toWebp(png, png.replace(/\.png$/, ".webp"), maxWidth);
+      // Pleine densité pour l'agrandissement dans les fiches projet.
+      if (!png.endsWith("poster.png")) {
+        const full = png.replace(/\.png$/, "-full.webp");
+        await toWebp(png, full, 4000);
+        // Capture déjà à pleine densité : la fiche retombe sur la version courante.
+        const [a, b] = await Promise.all([readFile(full), readFile(png.replace(/\.png$/, ".webp"))]);
+        if (a.equals(b)) await rm(full);
+      }
       await rm(png);
     }
     await rm(videoDir, { recursive: true, force: true });

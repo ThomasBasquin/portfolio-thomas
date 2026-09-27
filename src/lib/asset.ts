@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 const fingerprints = new Map<string, string>();
@@ -30,4 +30,12 @@ export function versioned(src: string): string {
 
   fingerprints.set(src, out);
   return out;
+}
+
+/** Version pleine densité d'une capture de galerie, quand le script l'a produite. */
+export function fullSize(src: string): string {
+  const full = src.replace(/\.webp$/, "-full.webp");
+  return full !== src && existsSync(path.join(process.cwd(), "public", full))
+    ? versioned(full)
+    : versioned(src);
 }

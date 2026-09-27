@@ -22,7 +22,7 @@ const { kind, poster, alt, video, url, eager = false } = Astro.props;
 const host = url ? new URL(url).host.replace(/^www\./, "") : undefined;
 const hasVideo = Boolean(video?.webm || video?.mp4);
 // Dimensions réelles produites par scripts/capture.mjs.
-const size = kind === "phone" ? { w: 780, h: 1688 } : { w: 1600, h: 1000 };
+const size = kind === "phone" ? { w: 780, h: 1688 } : { w: 1920, h: 1080 };
 ---
 
 <div class:list={["device", `device--${kind}`]}>

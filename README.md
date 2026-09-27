@@ -41,16 +41,20 @@ public/
 
 `npm run captures` visite chaque `links.demo`, prend les captures et enregistre un screencast, puis convertit le tout avec `ffmpeg`. Sans argument il traite tous les projets ; sinon `npm run captures <slug>`.
 
-Sortie dans `public/media/<slug>/` : `poster.webp`, `capture-1.webp`, `capture-2.webp`, `loop.webm`, `loop.mp4`. L'écriture passe par un dossier temporaire et n'est promue qu'en cas de succès — un site momentanément cassé ne détruit pas des médias corrects.
+Sortie dans `public/media/<slug>/` : `poster.webp`, `capture-N.webp`, `loop.webm`, `loop.mp4`, plus `capture-N-full.webp` en pleine densité quand la capture dépasse la taille courante (ouverte en grand depuis la galerie des fiches projet). La boucle est enregistrée image par image via le screencast de Chromium à la densité de l'écran, puis encodée une seule fois. L'écriture passe par un dossier temporaire et n'est promue qu'en cas de succès — un site momentanément cassé ne détruit pas des médias corrects.
 
 Ces noms de fichiers sont stables d'une capture à l'autre, alors que nginx les sert avec `max-age=14400`. Chaque URL de média reçoit donc au build une empreinte de contenu (`?v=…`, voir `src/lib/asset.ts`) : un visiteur déjà venu voit les nouveaux médias immédiatement après un déploiement, sans rechargement forcé.
 
-**Sites protégés par une connexion.** Nook exige un compte. Créer un `.env` à la racine (déjà couvert par `.gitignore`) :
+**Sites protégés par une connexion.** Nook et les jeux de Runway exigent un compte. Créer un `.env` à la racine (déjà couvert par `.gitignore`) :
 
 ```
 NOOK_EMAIL=...
 NOOK_PASSWORD=...
+RUNWAY_EMAIL=...
+RUNWAY_PASSWORD=...
 ```
+
+Le compte de démonstration Runway a une partie en cours dans chaque simulateur ; le script les montre sans jamais jouer de tour. Si une partie devient injouable (nouvelle version du moteur), en recréer une et l'avancer jusqu'à un état présentable.
 
 Sans ces variables, le script capture l'écran de connexion et le signale — donc jamais de chemin d'image mort, mais l'application elle-même n'est pas montrée. Utiliser de préférence un compte de démonstration garni de contenu présentable : **ce qui est capturé devient public**.
 
@@ -62,7 +66,7 @@ Sans ces variables, le script capture l'écran de connexion et le signale — do
 
 1. Créer `src/content/projects/mon-projet.md` — le nom du fichier devient le slug (`/projets/mon-projet`). Le schéma est validé au build (`content.config.ts`).
 2. Renseigner `links.demo`, puis lancer `npm run captures mon-projet`.
-3. `device` : `browser` (capture 1440×900, cadre navigateur avec le vrai nom d'hôte) ou `phone` (capture 390×844, cadre téléphone). Le choix se fait sur ce qu'est le produit, pas sur ce qui rend bien.
+3. `device` : `browser` (capture 1920×1080, cadre navigateur avec le vrai nom d'hôte) ou `phone` (capture 390×844, cadre téléphone). Le choix se fait sur ce qu'est le produit, pas sur ce qui rend bien.
 4. `accent` : couleur hex du fil conducteur. Les variantes lisibles (texte, fonds, theme-color) sont dérivées au build avec contraste AA garanti.
 5. `order` contrôle la position ; les sections alternent automatiquement de côté.
 6. `status: "wip"` pour un projet pas encore en ligne dans sa version actuelle : ni lien, ni média, un écran « Refonte en cours » à la place, et « En cours » au lieu de l'année dans l'index. Le script de capture l'ignore tant qu'il n'a pas de `links.demo`.

@@ -6,7 +6,7 @@ import SiteHeader from "../../components/SiteHeader.astro";
 import SiteFooter from "../../components/SiteFooter.astro";
 import DeviceFrame from "../../components/DeviceFrame.astro";
 import { accentRoles } from "../../lib/colors";
-import { versioned } from "../../lib/asset";
+import { fullSize, versioned } from "../../lib/asset";
 import { SITE } from "../../lib/site";
 
 export async function getStaticPaths() {
@@ -105,14 +105,16 @@ const alt =
           <div class:list={["proj-gallery", `proj-gallery--${galleryDevice}`]}>
             {media.gallery.map(({ src, caption }) => (
               <figure>
-                <img
-                  src={versioned(src)}
-                  alt={`${title} — ${caption}`}
-                  width={galleryDevice === "phone" ? 780 : 1600}
-                  height={galleryDevice === "phone" ? 1688 : 1000}
-                  loading="lazy"
-                  decoding="async"
-                />
+                <a class="gallery-zoom" href={fullSize(src)} aria-label={`Agrandir : ${caption}`}>
+                  <img
+                    src={versioned(src)}
+                    alt={`${title} — ${caption}`}
+                    width={galleryDevice === "phone" ? 780 : 1920}
+                    height={galleryDevice === "phone" ? 1688 : 1080}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </a>
                 <figcaption class="micro">{caption}</figcaption>
               </figure>
             ))}
@@ -135,4 +137,33 @@ const alt =
   <div class="container grid outro-footer">
     <SiteFooter home={false} />
   </div>
+
+  {media.gallery.length > 0 && (
+    <dialog class="lightbox" aria-label={`Captures de ${title}`}>
+      <figure class="lightbox-figure">
+        <img class="lightbox-img" alt="" />
+        <figcaption class="lightbox-caption">
+          <span class="micro lightbox-count"></span>
+          <span class="lightbox-text"></span>
+        </figcaption>
+      </figure>
+      <button class="lightbox-btn lightbox-close" type="button" aria-label="Fermer">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+      </button>
+      {media.gallery.length > 1 && (
+        <>
+          <button class="lightbox-btn lightbox-prev" type="button" aria-label="Capture précédente">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+          </button>
+          <button class="lightbox-btn lightbox-next" type="button" aria-label="Capture suivante">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+          </button>
+        </>
+      )}
+    </dialog>
+  )}
 </Base>
+
+<script>
+  import "../../scripts/lightbox";
+</script>
