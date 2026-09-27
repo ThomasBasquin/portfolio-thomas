@@ -2,7 +2,7 @@
 title: "Martin Basquin"
 tagline: "Le montage vidéo de Martin, en vitrine"
 description: "Le portfolio d'un vidéaste monteur, qu'il pourra mettre à jour lui-même."
-role: "Design et développement"
+role: "Conception, design, développement et mise en ligne"
 stack: ["Next.js", "Prisma", "SQLite"]
 accent: "#f5c518"
 device: "browser"

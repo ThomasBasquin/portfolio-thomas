@@ -2,7 +2,7 @@
 title: "Pokédex"
 tagline: "L'encyclopédie Pokémon interactive"
 description: "Une encyclopédie des Pokémon avec recherche, fiches détaillées et navigation au doigt."
-role: "Développement"
+role: "Conception, design, développement et mise en ligne"
 stack: ["Next.js", "React", "Tailwind"]
 accent: "#ef4444"
 device: "phone"

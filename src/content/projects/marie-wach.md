@@ -2,7 +2,7 @@
 title: "Marie Wach"
 tagline: "Un cabinet d'ostéopathie, en ligne"
 description: "Le site d'un cabinet d'ostéopathie : les soins proposés, le cabinet et la prise de rendez-vous."
-role: "Design, développement et mise en ligne"
+role: "Conception, design, développement et mise en ligne"
 stack: ["Astro", "JavaScript", "Leaflet"]
 accent: "#57c785"
 device: "phone"

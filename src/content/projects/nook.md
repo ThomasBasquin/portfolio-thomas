@@ -2,7 +2,7 @@
 title: "Nook"
 tagline: "Tout ce qu'on joue, regarde et lit, au même endroit"
 description: "Une bibliothèque de jeux, films, séries, animés et livres, partagée entre proches."
-role: "Conception, design et développement"
+role: "Conception, design, développement et mise en ligne"
 stack: ["Next.js", "TypeScript", "Tailwind", "PWA"]
 accent: "#3b5bff"
 device: "phone"
