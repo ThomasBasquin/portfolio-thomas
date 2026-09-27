@@ -57,10 +57,10 @@ const SCENARIOS = {
     gallery: {
       device: "browser",
       shots: [
-        { path: "/seance", y: 600 },
-        { path: "/pour-qui", y: 730 },
-        { path: "/a-propos", y: 600 },
-        { path: "/contact", y: 480, theme: "dark" },
+        { path: "/seance", y: 560 },
+        { path: "/pour-qui", y: 600 },
+        { path: "/a-propos", y: 560 },
+        { path: "/contact", y: 520, theme: "dark" },
       ],
     },
   },
