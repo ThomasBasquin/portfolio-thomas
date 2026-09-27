@@ -33,6 +33,11 @@ const galleryDevice = media.galleryDevice ?? device;
 const accent = accentRoles(project.data.accent);
 const { Content } = await render(project);
 
+const navAccent = (hex: string) => {
+  const roles = accentRoles(hex);
+  return `--accent: ${roles.accent}; --accent-ink: ${roles.ink};`;
+};
+
 const alt =
   device === "phone"
     ? `${title} sur un écran de téléphone, capturé sur le site en ligne`
@@ -122,13 +127,24 @@ const alt =
         )}
 
         <nav class="proj-nav" aria-label="Autres projets">
-          <a href={`/projets/${prev.id}`} rel="prev">
-            <span class="micro">← Projet précédent</span>
-            <span class="nav-title">{prev.data.title}</span>
+          <a href={`/projets/${prev.id}`} rel="prev" style={navAccent(prev.data.accent)}>
+            <span class="micro"><span class="nav-long">Projet </span>précédent</span>
+            <span class="nav-title">
+              <svg class="nav-chevron" viewBox="0 0 12 20" aria-hidden="true"><path d="M10 2L2 10l8 8" /></svg>
+              <span class="nav-name">{prev.data.title}</span>
+            </span>
           </a>
-          <a class="nav-next" href={`/projets/${next.id}`} rel="next">
-            <span class="micro">Projet suivant →</span>
-            <span class="nav-title">{next.data.title}</span>
+          <a
+            class="nav-next"
+            href={`/projets/${next.id}`}
+            rel="next"
+            style={navAccent(next.data.accent)}
+          >
+            <span class="micro"><span class="nav-long">Projet </span>suivant</span>
+            <span class="nav-title">
+              <span class="nav-name">{next.data.title}</span>
+              <svg class="nav-chevron" viewBox="0 0 12 20" aria-hidden="true"><path d="M2 2l8 8-8 8" /></svg>
+            </span>
           </a>
         </nav>
       </div>
