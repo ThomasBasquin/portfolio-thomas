@@ -27,70 +27,33 @@ html {
   --live-accent: var(--accent);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-inout: cubic-bezier(0.7, 0, 0.15, 1);
-  transition: --live-accent 900ms ease;
 }
 
 /* ==========================================================================
-   Grain argentique
+   Barre de progression — pilotée en JS : sur iOS, la chronologie de
+   défilement CSS saute en arrière quand le doigt reprend le défilement.
    ========================================================================== */
 
-body::after {
+.site-header::after {
   content: "";
-  position: fixed;
-  inset: -12%;
-  z-index: 50;
-  pointer-events: none;
-  opacity: 0.07;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  body::after {
-    animation: grain 900ms steps(6) infinite;
-  }
-}
-
-@keyframes grain {
-  0% { transform: translate(0, 0); }
-  17% { transform: translate(-4%, 3%); }
-  33% { transform: translate(3%, -5%); }
-  50% { transform: translate(-6%, -2%); }
-  67% { transform: translate(5%, 4%); }
-  83% { transform: translate(-2%, 6%); }
-  100% { transform: translate(0, 0); }
-}
-
-/* ==========================================================================
-   Barre de progression — CSS pur, pilotée par le défilement
-   ========================================================================== */
-
-@supports (animation-timeline: scroll()) {
-  .site-header::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: -1px;
-    height: 2px;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      var(--live-accent) 60%,
-      color-mix(in oklab, var(--live-accent) 40%, white)
-    );
-    transform-origin: left;
-    transform: scaleX(0);
-    animation-name: scroll-progress;
-    animation-timing-function: linear;
-    animation-fill-mode: both;
-    animation-timeline: scroll(root);
-  }
-}
-
-@keyframes scroll-progress {
-  to {
-    transform: scaleX(1);
-  }
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--live-accent) 60%,
+    color-mix(in oklab, var(--live-accent) 40%, white)
+  );
+  transform-origin: left;
+  transform: scaleX(var(--progress, 0));
+  /* Transform : lisse l'intervalle entre deux événements de défilement,
+     espacés sur iOS pendant l'inertie. Accent : porté par la barre seule,
+     car une propriété héritée qui transitionne sur <html> recalcule le style
+     de toute la page à chaque image. */
+  transition: transform 160ms linear, --live-accent 900ms ease;
 }
 
 /* ==========================================================================

@@ -1,6 +1,5 @@
 export {};
 
-const root = document.documentElement;
 const motionOK = window.matchMedia("(prefers-reduced-motion: no-preference)").matches;
 const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 
@@ -26,6 +25,7 @@ const lerp = (from: number, to: number, k: number): number => from + (to - from)
 const settled = (a: number, b: number, eps = 0.01): boolean => Math.abs(a - b) < eps;
 
 trackAccent();
+scrollProgress();
 
 if (motionOK) {
   scrambleMail();
@@ -37,8 +37,9 @@ if (motionOK) {
 }
 
 function trackAccent(): void {
+  const header = document.querySelector<HTMLElement>("[data-header]");
   const sections = Array.from(document.querySelectorAll<HTMLElement>("[data-showcase]"));
-  if (sections.length === 0 || !("IntersectionObserver" in window)) return;
+  if (!header || sections.length === 0 || !("IntersectionObserver" in window)) return;
 
   let current: HTMLElement | null = null;
   const observer = new IntersectionObserver(
@@ -48,16 +49,39 @@ function trackAccent(): void {
         if (entry.isIntersecting) {
           current = section;
           const accent = getComputedStyle(section).getPropertyValue("--accent").trim();
-          if (accent) root.style.setProperty("--live-accent", accent);
+          if (accent) header.style.setProperty("--live-accent", accent);
         } else if (current === section) {
           current = null;
-          root.style.removeProperty("--live-accent");
+          header.style.removeProperty("--live-accent");
         }
       }
     },
     { rootMargin: "-45% 0px -45% 0px" }
   );
   for (const section of sections) observer.observe(section);
+}
+
+function scrollProgress(): void {
+  const header = document.querySelector<HTMLElement>("[data-header]");
+  if (!header) return;
+  let queued = false;
+
+  const update = (): void => {
+    queued = false;
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+    header.style.setProperty("--progress", progress.toFixed(4));
+  };
+
+  const queue = (): void => {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(update);
+  };
+
+  window.addEventListener("scroll", queue, { passive: true });
+  window.addEventListener("resize", queue, { passive: true });
+  update();
 }
 
 function heroWeight(): void {
