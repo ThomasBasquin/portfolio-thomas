@@ -832,6 +832,7 @@ main {
   align-items: baseline;
   gap: 0.5rem clamp(1rem, 3vw, 2.5rem);
   padding-block: 1.35rem;
+  padding-right: clamp(0.5rem, 1.2vw, 1rem);
   border-bottom: 1px solid var(--line);
   text-decoration: none;
   transition: background-color 180ms ease-out;
@@ -841,10 +842,18 @@ main {
   .side-list a:hover {
     background: color-mix(in oklab, var(--accent) 7%, transparent);
   }
+
+  .side-list a:hover .side-name {
+    transform: translateX(0.4rem);
+  }
 }
 
 .side-list a:focus-visible {
   background: color-mix(in oklab, var(--accent) 7%, transparent);
+}
+
+.side-list a:focus-visible .side-name {
+  transform: translateX(0.4rem);
 }
 
 .side-name {
@@ -852,6 +861,13 @@ main {
   font-weight: 560;
   font-size: 1.15rem;
   letter-spacing: -0.015em;
+  transition: transform 180ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .side-name {
+    transition: none;
+  }
 }
 
 .side-name span {
