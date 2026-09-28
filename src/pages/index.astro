@@ -104,9 +104,26 @@ const projects = (await getCollection("projects")).sort(
       <SiteFooter />
     </section>
   </main>
+  {/* Synchrone et en fin de page : la position est rendue avant le premier
+      affichage, donc avant la capture de la transition d'arrivée. */}
+  <script is:inline>
+    try {
+      const y = sessionStorage.getItem("home-scroll-restore");
+      if (y !== null) {
+        sessionStorage.removeItem("home-scroll-restore");
+        window.scrollTo({ top: Number(y), behavior: "instant" });
+      }
+    } catch {}
+  </script>
 </Base>
 
 <script>
   import "../scripts/project-video";
   import "../scripts/section-counter";
+
+  addEventListener("pagehide", () => {
+    try {
+      sessionStorage.setItem("home-scroll", String(Math.round(scrollY)));
+    } catch {}
+  });
 </script>

@@ -198,9 +198,19 @@ html {
    Transitions entre pages — l'écran et le titre changent de place
    ========================================================================== */
 
-@media (prefers-reduced-motion: no-preference) {
+/* Sur iPhone, Safari charge la page sans glissement mais plus lentement, et
+   le retour ne peut pas jouer la même transition : desktop uniquement. */
+@media (hover: hover) and (pointer: fine) {
   @view-transition {
     navigation: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
   }
 }
 
