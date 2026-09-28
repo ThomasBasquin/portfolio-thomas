@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import "../styles/effects.css";
 import { SITE } from "../lib/site";
 import { SITE_ACCENT, type AccentRoles } from "../lib/colors";
 
@@ -57,5 +58,8 @@ const accentStyle = `--accent: ${accent.accent}; --accent-ink: ${accent.ink}; --
   <body>
     <a class="skip-link" href="#contenu">Aller au contenu</a>
     <slot />
+    <script>
+      import "../scripts/effects";
+    </script>
   </body>
 </html>

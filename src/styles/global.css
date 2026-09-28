@@ -334,11 +334,16 @@ main {
   line-height: 0.92;
 }
 
-.hero-name span {
+.hero-name .line {
   display: block;
+  white-space: nowrap;
 }
 
-.hero-name span + span {
+.hero-name .ch {
+  display: inline-block;
+}
+
+.hero-name .line + .line {
   color: var(--ink-2);
 }
 
@@ -1014,9 +1019,10 @@ main {
 
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) and (min-width: 60.01rem) {
-    .showcase-device,
     .showcase-text > * {
-      animation: rise-in linear both;
+      animation-name: rise-in;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
       animation-timeline: view();
       animation-range: entry 8% entry 62%;
     }
@@ -1046,26 +1052,33 @@ main {
    Page projet
    ========================================================================== */
 
+/* L'écran tient en entier dans la première vue : texte d'un côté, produit de
+   l'autre, comme sur l'accueil. */
 .proj-head {
-  padding-block: clamp(3rem, 8vh, 5rem) clamp(2.5rem, 6vh, 4rem);
-  row-gap: 0.75rem;
+  min-height: calc(100svh - 3.5rem);
+  padding-block: clamp(2rem, 5vh, 3.5rem);
+  align-items: center;
+}
+
+.proj-intro {
+  grid-column: 1 / 6;
+  display: grid;
+  gap: 0.75rem;
+  align-content: center;
 }
 
 .back-link {
-  grid-column: 1 / -1;
   justify-self: start;
   text-decoration: none;
-  margin-bottom: clamp(1.5rem, 4vh, 2.5rem);
+  margin-bottom: clamp(1rem, 3vh, 2rem);
 }
 
 .proj-head h1 {
-  grid-column: 1 / 9;
   font-size: var(--fs-title);
   font-stretch: 102%;
 }
 
 .proj-tagline {
-  grid-column: 1 / 8;
   font-size: var(--fs-lead);
   line-height: 1.4;
   color: var(--ink-2);
@@ -1073,11 +1086,20 @@ main {
 }
 
 .proj-device {
-  grid-column: 1 / -1;
+  grid-column: 6 / 13;
   position: relative;
-  margin-top: clamp(2.5rem, 6vh, 4rem);
   display: flex;
   justify-content: center;
+  align-items: center;
+}
+
+.proj-head[data-side="left"] .proj-device {
+  grid-column: 1 / 8;
+  order: -1;
+}
+
+.proj-head[data-side="left"] .proj-intro {
+  grid-column: 8 / 13;
 }
 
 .proj-device::before {
@@ -1095,16 +1117,38 @@ main {
   opacity: 0.5;
 }
 
-.proj-device .device--browser {
-  max-width: 64rem;
+.proj-meta {
+  margin: clamp(1.5rem, 4vh, 2.5rem) 0 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem 1.5rem;
 }
 
-.proj-meta {
-  grid-column: 1 / -1;
-  margin: clamp(2.5rem, 6vh, 4rem) 0 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
-  gap: 1.5rem;
+/* Une colonne : le produit juste sous le titre, la fiche ensuite. Le
+   téléphone se règle sur la hauteur restante pour tenir en entier. */
+@media (max-width: 60rem) {
+  .proj-head {
+    min-height: 0;
+    row-gap: 0.75rem;
+  }
+
+  .proj-intro {
+    display: contents;
+  }
+
+  .proj-head[data-side] .proj-device {
+    order: 0;
+    margin-block: 1rem;
+  }
+
+  .proj-meta {
+    order: 1;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  }
+
+  .proj-device .device--phone {
+    width: min(100%, clamp(12rem, (100svh - 18.5rem) * 390 / 844, 18rem));
+  }
 }
 
 .proj-meta > div {
@@ -1470,6 +1514,7 @@ main {
 
 @media (max-height: 34rem) {
   .hero,
+  .proj-head,
   .showcase,
   .notfound {
     min-height: 0;

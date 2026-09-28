@@ -15,9 +15,11 @@ interface Props {
   url?: string;
   /** Vrai pour la première vignette de la page : c'est elle le LCP. */
   eager?: boolean;
+  /** Relie ce cadre à celui de l'autre page pendant une transition de navigation. */
+  transitionName?: string;
 }
 
-const { kind, poster, alt, video, url, eager = false } = Astro.props;
+const { kind, poster, alt, video, url, eager = false, transitionName } = Astro.props;
 
 const host = url ? new URL(url).host.replace(/^www\./, "") : undefined;
 const hasVideo = Boolean(video?.webm || video?.mp4);
@@ -25,7 +27,11 @@ const hasVideo = Boolean(video?.webm || video?.mp4);
 const size = kind === "phone" ? { w: 780, h: 1688 } : { w: 1920, h: 1080 };
 ---
 
-<div class:list={["device", `device--${kind}`]}>
+<div
+  class:list={["device", `device--${kind}`]}
+  data-tilt
+  style={transitionName ? `view-transition-name: ${transitionName}` : undefined}
+>
   {kind === "browser" && (
     <div class="device-bar" aria-hidden="true">
       <span class="device-dots"><i /><i /><i /></span>

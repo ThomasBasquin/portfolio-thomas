@@ -37,7 +37,7 @@ const alt =
         {num}
         {wip && <span class="status-tag">En cours</span>}
       </p>
-      <h2 id={titleId}>{title}</h2>
+      <h2 id={titleId} style={`view-transition-name: titre-${project.id}`}>{title}</h2>
       <p class="showcase-tagline">{tagline}</p>
       <p class="showcase-desc">{description}</p>
       <dl class="showcase-meta">
@@ -70,6 +70,7 @@ const alt =
         video={media.video}
         url={wip ? undefined : links.demo}
         alt={alt}
+        transitionName={`ecran-${project.id}`}
       />
     </div>
   </div>

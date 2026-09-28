@@ -17,7 +17,16 @@ const projects = (await getCollection("projects")).sort(
   <main id="contenu">
     <section class="hero container" id="haut" aria-label="Introduction">
       <div class="grid hero-head">
-        <h1 class="hero-name"><span>Thomas</span><span>Basquin</span></h1>
+        <h1 class="hero-name" data-hero-name>
+          <span class="visually-hidden">{SITE.name}</span>
+          {[SITE.firstName, SITE.lastName].map((word, line) => (
+            <span class="line" aria-hidden="true">
+              {[...word].map((char, i) => (
+                <span class="ch" style={`--i: ${i + line * 3}`}>{char}</span>
+              ))}
+            </span>
+          ))}
+        </h1>
         <p class="hero-lede">
           <strong>{SITE.role}.</strong> Je conçois des applications de bout en bout,
           du prototype à la mise en production.

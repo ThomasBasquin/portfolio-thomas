@@ -17,6 +17,8 @@ export async function getStaticPaths() {
     params: { slug: project.id },
     props: {
       project,
+      // Même côté que sur l'accueil : l'écran glisse au lieu de traverser la page.
+      side: i % 2 === 0 ? "right" : "left",
       prev: projects[(i - 1 + projects.length) % projects.length],
       next: projects[(i + 1) % projects.length],
     },
@@ -25,7 +27,7 @@ export async function getStaticPaths() {
 
 type Props = InferGetStaticPropsType<typeof getStaticPaths>;
 
-const { project, prev, next } = Astro.props;
+const { project, side, prev, next } = Astro.props;
 const { title, tagline, description, role, stack, year, status, links, media, device } =
   project.data;
 const wip = status === "wip";
@@ -58,10 +60,40 @@ const alt =
   <SiteHeader home={false} />
   <main id="contenu">
     <article>
-      <header class="proj-head container grid">
-        <a class="back-link micro" href="/">← Tous les projets</a>
-        <h1>{title}</h1>
-        <p class="proj-tagline">{tagline}</p>
+      <header class="proj-head container grid" data-side={side}>
+        <div class="proj-intro">
+          <a class="back-link micro" href={`/#projet-${project.id}`} data-back>← Tous les projets</a>
+          <h1 style={`view-transition-name: titre-${project.id}`}>{title}</h1>
+          <p class="proj-tagline">{tagline}</p>
+          <dl class="proj-meta">
+            <div>
+              <dt class="micro">Rôle</dt>
+              <dd>{role}</dd>
+            </div>
+            <div>
+              <dt class="micro">Stack</dt>
+              <dd>{stack.join(" · ")}</dd>
+            </div>
+            <div>
+              <dt class="micro">Année</dt>
+              <dd>{wip ? `${year} · en cours` : year}</dd>
+            </div>
+            {!wip && (links.demo || links.code) && (
+              <div>
+                <dt class="micro">Liens</dt>
+                <dd>
+                  {links.demo && (
+                    <a href={links.demo} rel="noopener" target="_blank">Voir le site ↗</a>
+                  )}
+                  {links.demo && links.code && " · "}
+                  {links.code && (
+                    <a href={links.code} rel="noopener" target="_blank">Code source ↗</a>
+                  )}
+                </dd>
+              </div>
+            )}
+          </dl>
+        </div>
         <div class="proj-device">
           <DeviceFrame
             kind={device}
@@ -69,36 +101,9 @@ const alt =
             url={wip ? undefined : links.demo}
             alt={alt}
             eager
+            transitionName={`ecran-${project.id}`}
           />
         </div>
-        <dl class="proj-meta">
-          <div>
-            <dt class="micro">Rôle</dt>
-            <dd>{role}</dd>
-          </div>
-          <div>
-            <dt class="micro">Stack</dt>
-            <dd>{stack.join(" · ")}</dd>
-          </div>
-          <div>
-            <dt class="micro">Année</dt>
-            <dd>{wip ? `${year} · en cours` : year}</dd>
-          </div>
-          {!wip && (links.demo || links.code) && (
-            <div>
-              <dt class="micro">Liens</dt>
-              <dd>
-                {links.demo && (
-                  <a href={links.demo} rel="noopener" target="_blank">Voir le site ↗</a>
-                )}
-                {links.demo && links.code && " · "}
-                {links.code && (
-                  <a href={links.code} rel="noopener" target="_blank">Code source ↗</a>
-                )}
-              </dd>
-            </div>
-          )}
-        </dl>
       </header>
 
       <div class="container grid">
@@ -182,4 +187,5 @@ const alt =
 
 <script>
   import "../../scripts/lightbox";
+  import "../../scripts/back-link";
 </script>

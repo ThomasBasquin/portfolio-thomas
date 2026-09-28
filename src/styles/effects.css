@@ -1,0 +1,274 @@
+/* ==========================================================================
+   Couche d'effets — tout ce fichier peut disparaître sans rien casser : le
+   site reste complet, seul le mouvement s'en va.
+   ========================================================================== */
+
+/* Déclarées pour être interpolées : une propriété personnalisée non typée
+   saute d'une valeur à l'autre au lieu de glisser. */
+@property --live-accent {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #3fae6a;
+}
+
+@property --tilt-x {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@property --tilt-y {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+html {
+  --live-accent: var(--accent);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-inout: cubic-bezier(0.7, 0, 0.15, 1);
+  transition: --live-accent 900ms ease;
+}
+
+/* ==========================================================================
+   Grain argentique
+   ========================================================================== */
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: -12%;
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0.07;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  body::after {
+    animation: grain 900ms steps(6) infinite;
+  }
+}
+
+@keyframes grain {
+  0% { transform: translate(0, 0); }
+  17% { transform: translate(-4%, 3%); }
+  33% { transform: translate(3%, -5%); }
+  50% { transform: translate(-6%, -2%); }
+  67% { transform: translate(5%, 4%); }
+  83% { transform: translate(-2%, 6%); }
+  100% { transform: translate(0, 0); }
+}
+
+/* ==========================================================================
+   Barre de progression — CSS pur, pilotée par le défilement
+   ========================================================================== */
+
+@supports (animation-timeline: scroll()) {
+  .site-header::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--live-accent) 60%,
+      color-mix(in oklab, var(--live-accent) 40%, white)
+    );
+    transform-origin: left;
+    transform: scaleX(0);
+    animation-name: scroll-progress;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+    animation-timeline: scroll(root);
+  }
+}
+
+@keyframes scroll-progress {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* ==========================================================================
+   Hero — le nom réagit au curseur sur les axes de la fonte variable
+   ========================================================================== */
+
+.hero-name .ch {
+  font-weight: var(--w, 620);
+  font-stretch: var(--s, 105%);
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(1.25rem);
+  }
+}
+
+/* Index : la couleur du projet balaie la ligne, le nom s'élargit. */
+.hero-index a,
+.side-list a {
+  position: relative;
+  isolation: isolate;
+}
+
+.hero-index a::before,
+.side-list a::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--accent) 18%, transparent),
+    color-mix(in oklab, var(--accent) 4%, transparent)
+  );
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 550ms var(--ease-out);
+}
+
+.hero-index .idx-name {
+  transition: font-stretch 450ms var(--ease-out), font-weight 450ms var(--ease-out),
+    color 300ms ease-out;
+}
+
+@media (hover: hover) {
+  .hero-index a:hover,
+  .side-list a:hover {
+    background: transparent;
+  }
+
+  .hero-index a:hover::before,
+  .side-list a:hover::before {
+    transform: scaleX(1);
+  }
+
+  .hero-index a:hover .idx-name {
+    font-stretch: 125%;
+    font-weight: 700;
+    color: var(--accent-ink);
+  }
+}
+
+.hero-index a:focus-visible::before,
+.side-list a:focus-visible::before {
+  transform: scaleX(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-index a::before,
+  .side-list a::before,
+  .hero-index .idx-name {
+    transition: none;
+  }
+}
+
+/* ==========================================================================
+   Écrans — ils suivent le curseur
+   ========================================================================== */
+
+.device {
+  transform: perspective(1800px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .skills > div,
+    .side-list li {
+      animation-name: fade-up;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: view();
+      animation-range: entry 5% entry 85%;
+    }
+  }
+}
+
+/* ==========================================================================
+   Boutons — remplis depuis le point d'entrée du curseur
+   ========================================================================== */
+
+.btn {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: color-mix(in oklab, var(--accent) 34%, transparent);
+  clip-path: circle(0% at var(--bx, 50%) var(--by, 50%));
+  transition: clip-path 600ms var(--ease-out);
+}
+
+@media (hover: hover) {
+  .btn:hover::before {
+    clip-path: circle(150% at var(--bx, 50%) var(--by, 50%));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn::before {
+    transition: none;
+  }
+}
+
+.outro-mail {
+  white-space: nowrap;
+}
+
+@media (max-width: 30rem) {
+  .outro-mail {
+    white-space: normal;
+  }
+}
+
+/* ==========================================================================
+   Transitions entre pages — l'écran et le titre changent de place
+   ========================================================================== */
+
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+}
+
+.site-header {
+  view-transition-name: site-header;
+}
+
+::view-transition-group(*) {
+  animation-duration: 750ms;
+  animation-timing-function: var(--ease-inout);
+}
+
+::view-transition-old(root) {
+  animation: 450ms var(--ease-inout) both vt-out;
+}
+
+::view-transition-new(root) {
+  animation: 650ms var(--ease-out) 150ms both vt-in;
+}
+
+@keyframes vt-out {
+  to {
+    opacity: 0;
+    transform: scale(0.97);
+    filter: blur(6px);
+  }
+}
+
+@keyframes vt-in {
+  from {
+    opacity: 0;
+    transform: translateY(2rem);
+  }
+}
