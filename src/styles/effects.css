@@ -5,12 +5,6 @@
 
 /* Déclarées pour être interpolées : une propriété personnalisée non typée
    saute d'une valeur à l'autre au lieu de glisser. */
-@property --live-accent {
-  syntax: "<color>";
-  inherits: true;
-  initial-value: #3fae6a;
-}
-
 @property --tilt-x {
   syntax: "<angle>";
   inherits: false;
@@ -24,36 +18,8 @@
 }
 
 html {
-  --live-accent: var(--accent);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-inout: cubic-bezier(0.7, 0, 0.15, 1);
-}
-
-/* ==========================================================================
-   Barre de progression — pilotée en JS : sur iOS, la chronologie de
-   défilement CSS saute en arrière quand le doigt reprend le défilement.
-   ========================================================================== */
-
-.site-header::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -1px;
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--live-accent) 60%,
-    color-mix(in oklab, var(--live-accent) 40%, white)
-  );
-  transform-origin: left;
-  transform: scaleX(var(--progress, 0));
-  /* Transform : lisse l'intervalle entre deux événements de défilement,
-     espacés sur iOS pendant l'inertie. Accent : porté par la barre seule,
-     car une propriété héritée qui transitionne sur <html> recalcule le style
-     de toute la page à chaque image. */
-  transition: transform 160ms linear, --live-accent 900ms ease;
 }
 
 /* ==========================================================================
