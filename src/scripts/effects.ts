@@ -87,15 +87,31 @@ function tiltDevices(): void {
     const holder = device.parentElement ?? device;
     // Un téléphone est étroit : à angle égal, il paraît presque immobile.
     const amp = device.classList.contains("device--phone") ? { x: 16, y: 26 } : { x: 9, y: 12 };
-    const cur = { x: 0, y: 0 };
-    const target = { x: 0, y: 0 };
+    const cur = { x: 0, y: 0, px: 0, py: 0, glare: 0 };
+    const target = { x: 0, y: 0, px: 0, py: 0, glare: 0 };
 
     const tick: Tick = () => {
       cur.x = lerp(cur.x, target.x, 0.1);
       cur.y = lerp(cur.y, target.y, 0.1);
+      cur.px = lerp(cur.px, target.px, 0.1);
+      cur.py = lerp(cur.py, target.py, 0.1);
+      cur.glare = lerp(cur.glare, target.glare, 0.08);
       device.style.setProperty("--tilt-x", `${cur.x.toFixed(3)}deg`);
       device.style.setProperty("--tilt-y", `${cur.y.toFixed(3)}deg`);
-      return !(settled(cur.x, target.x) && settled(cur.y, target.y));
+      device.style.setProperty("--gx", `${(50 + cur.px * 100).toFixed(2)}%`);
+      device.style.setProperty("--gy", `${(50 + cur.py * 100).toFixed(2)}%`);
+      // La bande glisse à contre-sens du curseur, comme un reflet fixe dans
+      // la pièce sur une vitre qui pivote.
+      device.style.setProperty("--sx", `${(50 - cur.px * 90).toFixed(2)}%`);
+      device.style.setProperty("--sy", `${(50 - cur.py * 90).toFixed(2)}%`);
+      device.style.setProperty("--glare", cur.glare.toFixed(3));
+      return !(
+        settled(cur.x, target.x) &&
+        settled(cur.y, target.y) &&
+        settled(cur.px, target.px, 0.001) &&
+        settled(cur.py, target.py, 0.001) &&
+        settled(cur.glare, target.glare, 0.002)
+      );
     };
 
     device.addEventListener("pointermove", (event) => {
@@ -104,12 +120,16 @@ function tiltDevices(): void {
       const py = (event.clientY - (r.top + r.height / 2)) / device.offsetHeight;
       target.x = -py * amp.x;
       target.y = px * amp.y;
+      target.px = px;
+      target.py = py;
+      target.glare = 1;
       run(tick);
     });
 
     device.addEventListener("pointerleave", () => {
       target.x = 0;
       target.y = 0;
+      target.glare = 0;
       run(tick);
     });
   }

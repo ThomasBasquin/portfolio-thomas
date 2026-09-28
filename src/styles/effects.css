@@ -105,6 +105,37 @@ html {
   transform: perspective(1800px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
 }
 
+/* Reflet de la vitre : un halo sous le curseur et une bande diagonale qui
+   glisse en sens inverse. Invisible au repos, rien n'est calculé hors survol. */
+.device-screen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    radial-gradient(
+      circle at var(--gx, 50%) var(--gy, 50%),
+      rgb(255 255 255 / 0.19),
+      rgb(255 255 255 / 0.05) 35%,
+      transparent 60%
+    ),
+    linear-gradient(
+      115deg,
+      transparent 38%,
+      rgb(255 255 255 / 0.12) 46%,
+      rgb(255 255 255 / 0.035) 50%,
+      rgb(255 255 255 / 0.08) 53%,
+      transparent 60%
+    );
+  background-size: 100% 100%, 300% 300%;
+  background-position: 0 0, var(--sx, 50%) var(--sy, 50%);
+  background-repeat: no-repeat;
+  mix-blend-mode: screen;
+  opacity: var(--glare, 0);
+}
+
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
     .skills > div,
