@@ -29,10 +29,16 @@ const VIEWPORT = {
   phone: { width: 390, height: 844 },
 };
 const LOOP_SECONDS = 5;
-const MAX_LOOP_BYTES = 2_500_000;
+const MAX_LOOP_BYTES = 4_000_000;
 // Plan fixe sur l'écran du poster en tête de boucle : la vidéo apparaît en
 // fondu, il faut que ce fondu se fasse sur une image immobile.
 const HOLD_MS = 600;
+// Chromium headless rend en logiciel : à la densité 2x, une page tient environ
+// 35 images par seconde. On filme donc la page au ralenti — horloges JS,
+// timers, rAF et animations CSS — puis on remet l'enregistrement à l'échelle :
+// au montage, chaque seconde réelle n'en vaut plus qu'un quart.
+const SLOWDOWN = 4;
+let timeScale = 1;
 
 /* -------------------------------------------------------------------------
    Configuration par projet
@@ -276,7 +282,7 @@ async function openRunwayTab(page, name) {
 async function searchPokemon(page, name) {
   const input = page.locator("input").first();
   await input.fill("", { force: true });
-  await input.pressSequentially(name, { delay: 110 });
+  await input.pressSequentially(name, { delay: 110 * timeScale });
   await input.press("Enter");
 }
 
@@ -337,8 +343,51 @@ async function markerEnd(file) {
  * déjà floue. Ici chaque image est un JPEG quasi intact, horodaté par le
  * navigateur, et l'assemblage intermédiaire est quasi sans perte.
  */
+/** Installé avant tout script de la page ; inerte tant que le ralenti vaut 1. */
+function installTimeDilation() {
+  const realPerf = performance.now.bind(performance);
+  const realDate = Date.now;
+  let rate = 1;
+  try {
+    rate = Number(sessionStorage.getItem("capture-slowdown")) || 1;
+  } catch {}
+  let perfReal = realPerf();
+  let perfVirtual = perfReal;
+  let dateReal = realDate();
+  let dateVirtual = dateReal;
+  const now = () => perfVirtual + (realPerf() - perfReal) / rate;
+  const date = () => dateVirtual + (realDate() - dateReal) / rate;
+  window.__setSlowdown = (k) => {
+    perfVirtual = now();
+    perfReal = realPerf();
+    dateVirtual = date();
+    dateReal = realDate();
+    rate = k;
+    try {
+      sessionStorage.setItem("capture-slowdown", String(k));
+    } catch {}
+  };
+  performance.now = now;
+  Date.now = date;
+  const raf = window.requestAnimationFrame.bind(window);
+  window.requestAnimationFrame = (callback) => raf(() => callback(now()));
+  const timeout = window.setTimeout.bind(window);
+  const interval = window.setInterval.bind(window);
+  window.setTimeout = (fn, delay, ...args) => timeout(fn, (delay || 0) * rate, ...args);
+  window.setInterval = (fn, delay, ...args) => interval(fn, (delay || 0) * rate, ...args);
+}
+
 async function startRecording(page, dir, viewport) {
   const cdp = await page.context().newCDPSession(page);
+  const slowAnimations = () =>
+    cdp.send("Animation.setPlaybackRate", { playbackRate: 1 / SLOWDOWN }).catch(() => {});
+  await cdp.send("Page.enable");
+  cdp.on("Page.frameNavigated", ({ frame }) => {
+    if (!frame.parentId) slowAnimations();
+  });
+  await slowAnimations();
+  await page.evaluate((k) => window.__setSlowdown(k), SLOWDOWN);
+  timeScale = SLOWDOWN;
   const frames = [];
   const writes = [];
   cdp.on("Page.screencastFrame", ({ data, metadata, sessionId }) => {
@@ -358,6 +407,7 @@ async function startRecording(page, dir, viewport) {
     async stop() {
       const stoppedAt = Date.now() / 1000;
       await cdp.send("Page.stopScreencast");
+      timeScale = 1;
       await Promise.all(writes);
       await cdp.detach().catch(() => {});
       if (frames.length === 0) throw new Error("aucune image enregistrée");
@@ -367,7 +417,7 @@ async function startRecording(page, dir, viewport) {
       const list = frames
         .map(({ file, time }, i) => {
           const end = frames[i + 1]?.time ?? Math.max(time + 0.1, stoppedAt);
-          return `file '${file}'\nduration ${(end - time).toFixed(4)}`;
+          return `file '${file}'\nduration ${((end - time) / SLOWDOWN).toFixed(4)}`;
         })
         .join("\n");
       const listFile = path.join(dir, "frames.txt");
@@ -380,7 +430,7 @@ async function startRecording(page, dir, viewport) {
         "-f", "concat",
         "-safe", "0",
         "-i", listFile,
-        "-vf", "fps=30,scale=trunc(iw/2)*2:trunc(ih/2)*2,format=yuv420p",
+        "-vf", "fps=60,scale=trunc(iw/2)*2:trunc(ih/2)*2,format=yuv420p",
         "-c:v", "libx264",
         "-crf", "8",
         "-preset", "veryfast",
@@ -448,8 +498,7 @@ async function toWebp(pngPath, webpPath, maxWidth) {
  * Ré-encode la capture brute de Playwright en webm (VP9) + mp4 (h264),
  * muettes, coupées à la fenêtre utile et redescendues sous le budget de poids.
  */
-async function encodeLoop(sourceVideo, offsetSeconds, seconds, outDir, device) {
-  const height = device === "phone" ? 960 : 1080;
+async function encodeLoop(sourceVideo, offsetSeconds, seconds, outDir) {
   const common = [
     "-y",
     "-loglevel", "error",
@@ -457,12 +506,11 @@ async function encodeLoop(sourceVideo, offsetSeconds, seconds, outDir, device) {
     "-t", seconds.toFixed(3),
     "-i", sourceVideo,
     "-an",
-    "-vf", `scale=-2:'min(${height},ih)':flags=lanczos`,
   ];
   const webm = path.join(outDir, "loop.webm");
   const mp4 = path.join(outDir, "loop.mp4");
 
-  for (const crf of [30, 34, 38, 42]) {
+  for (const crf of [18, 22, 26, 30, 34]) {
     await run("ffmpeg", [
       ...common,
       "-c:v", "libvpx-vp9",
@@ -475,15 +523,20 @@ async function encodeLoop(sourceVideo, offsetSeconds, seconds, outDir, device) {
     if ((await stat(webm)).size <= MAX_LOOP_BYTES) break;
   }
 
-  await run("ffmpeg", [
-    ...common,
-    "-c:v", "libx264",
-    "-crf", "24",
-    "-preset", "slow",
-    "-pix_fmt", "yuv420p",
-    "-movflags", "+faststart",
-    mp4,
-  ]);
+  // h264 compresse moins bien que VP9 à qualité égale : la même marche de
+  // budget, décalée, garde le repli Safari dans des poids comparables.
+  for (const crf of [16, 20, 24, 28]) {
+    await run("ffmpeg", [
+      ...common,
+      "-c:v", "libx264",
+      "-crf", String(crf),
+      "-preset", "slow",
+      "-pix_fmt", "yuv420p",
+      "-movflags", "+faststart",
+      mp4,
+    ]);
+    if ((await stat(mp4)).size <= MAX_LOOP_BYTES * 1.5) break;
+  }
 }
 
 /* -------------------------------------------------------------------------
@@ -499,17 +552,45 @@ async function capture(browser, project) {
   await mkdir(videoDir, { recursive: true });
 
   const viewport = VIEWPORT[device];
+  const phone = device === "phone";
+  // Le screencast headless émet en pixels CSS, quelle que soit la densité
+  // émulée. On obtient la 2x par un écran physique deux fois plus grand en
+  // densité 1, et un viewport meta qui ramène la mise en page à la largeur
+  // voulue avec un zoom de 2 — rastérisé, donc net. Le viewport meta n'est lu
+  // qu'en émulation mobile ; sans hasTouch, un bureau garde hover et pointer fine.
   const context = await browser.newContext({
-    viewport,
-    deviceScaleFactor: 2,
+    viewport: { width: viewport.width * 2, height: viewport.height * 2 },
+    deviceScaleFactor: 1,
     locale: "fr-FR",
     timezoneId: "Europe/Paris",
-    isMobile: device === "phone",
-    hasTouch: device === "phone",
+    isMobile: true,
+    hasTouch: phone,
     reducedMotion: "no-preference",
   });
+  await context.addInitScript((width) => {
+    const content = `width=${width}, initial-scale=2, minimum-scale=2, maximum-scale=2`;
+    const pin = () => {
+      let meta = document.querySelector('meta[name="viewport"]');
+      if (!meta && document.head) {
+        meta = document.createElement("meta");
+        meta.name = "viewport";
+        document.head.prepend(meta);
+      }
+      if (meta && meta.content !== content) meta.content = content;
+    };
+    new MutationObserver(pin).observe(document, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["content"],
+    });
+  }, viewport.width);
+
+  await context.addInitScript(installTimeDilation);
 
   const page = await context.newPage();
+  const wait = page.waitForTimeout.bind(page);
+  page.waitForTimeout = (ms) => wait(ms * timeScale);
 
   try {
     if (scenario.prepare) await scenario.prepare(page);
@@ -565,13 +646,13 @@ async function capture(browser, project) {
     await page.waitForTimeout(250 + HOLD_MS);
     const actStart = Date.now();
     await scenario.act(page);
-    const actSeconds = (Date.now() - actStart) / 1000;
+    const actSeconds = (Date.now() - actStart) / 1000 / SLOWDOWN;
     await page.waitForTimeout(300);
 
     const videoPath = await recording.stop();
     await context.close();
     const offset = await markerEnd(videoPath);
-    await encodeLoop(videoPath, offset, (250 + HOLD_MS) / 1000 + actSeconds, outDir, device);
+    await encodeLoop(videoPath, offset, (250 + HOLD_MS) / 1000 + actSeconds, outDir);
 
     const widthFor = (kind) => (kind === "phone" ? 900 : 1920);
     const converted = shots.map((png) => [png, widthFor(device)]);
