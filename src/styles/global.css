@@ -59,7 +59,7 @@
 
   --gutter: clamp(1.25rem, 3.5vw, 2.5rem);
   --band: clamp(4.5rem, 11vh, 8rem);
-  --radius: 12px;
+  --radius: 0.75rem;
   /* Coins d'écran d'un iPhone 12 à 14 (47,33 pt sur 390 × 844 pt), le format
      des captures : valable pour toute boîte qui a exactement ces proportions. */
   --phone-corner: 12.136% / 5.608%;
@@ -79,6 +79,12 @@
 }
 
 html {
+  /* Au-delà d'une fenêtre 1080p (~1920 × 960), tout le site s'agrandit en bloc :
+     les tailles étant en rem, la mise en page garde ses proportions au lieu de
+     flotter au centre d'un grand écran. La croissance ne suit qu'un tiers de celle
+     de la fenêtre : proportionnelle, elle donnerait un texte démesuré. Le plus petit
+     des deux axes décide, pour qu'un écran ultra-large ne déborde pas en hauteur. */
+  font-size: max(100%, 100% * 2 / 3 + min(100vw / 360, 100vh / 180));
   color-scheme: dark;
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
@@ -315,11 +321,16 @@ main {
    ========================================================================== */
 
 .hero {
+  /* L'index s'ancre en bas de l'écran. Au-delà de 48rem de hauteur utile, cet
+     ancrage creuserait un vide entre le nom et l'index : le surplus passe dans
+     les marges, et le hero remplit toujours l'écran. */
+  --hero-spill: (100svh - 3.5rem - 48rem) / 2;
   min-height: calc(100svh - 3.5rem);
   display: grid;
   align-content: space-between;
   gap: clamp(3rem, 10vh, 6rem);
-  padding-block: clamp(3rem, 9vh, 6rem) clamp(2rem, 5vh, 3.5rem);
+  padding-block: max(clamp(3rem, 9vh, 6rem), var(--hero-spill))
+    max(clamp(2rem, 5vh, 3.5rem), var(--hero-spill));
 }
 
 .hero-head {
@@ -673,7 +684,7 @@ main {
     color-mix(in oklab, var(--accent) 26%, transparent),
     transparent 72%
   );
-  filter: blur(46px);
+  filter: blur(2.875rem);
   opacity: 0.55;
   pointer-events: none;
 }
@@ -802,6 +813,12 @@ main {
 .band {
   padding-block: var(--band);
   border-top: 1px solid var(--line);
+}
+
+/* Entre deux projets, les deux marges de section font un écran vide ; le
+   bandeau qui suit le dernier n'en a qu'une, et son filet affleurerait. */
+.showcase + .band {
+  margin-top: var(--band);
 }
 
 .band h2 {
@@ -1129,7 +1146,7 @@ main {
     color-mix(in oklab, var(--accent) 22%, transparent),
     transparent 72%
   );
-  filter: blur(50px);
+  filter: blur(3.125rem);
   opacity: 0.5;
 }
 

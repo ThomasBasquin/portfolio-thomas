@@ -102,7 +102,7 @@ html {
    ========================================================================== */
 
 .device {
-  transform: perspective(1800px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
+  transform: perspective(112.5rem) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
 }
 
 /* Reflet de la vitre : un halo sous le curseur et une bande diagonale qui
