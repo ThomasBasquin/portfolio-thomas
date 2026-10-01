@@ -1,0 +1,27 @@
+---
+import { SITE } from "../lib/site";
+
+const { class: className } = Astro.props;
+const [user, domain] = SITE.email.split("@");
+---
+
+{/* L'adresse n'existe jamais en entier dans le HTML : l'arobase vient du CSS
+    et le lien mailto est assemblé au chargement, hors de portée des robots
+    qui lisent la page brute. */}
+<a class:list={["email", className]} data-user={user} data-domain={domain}
+  >{user}<span class="at"></span>{domain}</a
+>
+
+<style>
+  .at::before {
+    content: "@";
+  }
+</style>
+
+<script>
+  for (const link of document.querySelectorAll<HTMLAnchorElement>("a.email")) {
+    const address = `${link.dataset.user}@${link.dataset.domain}`;
+    link.href = `mailto:${address}`;
+    link.textContent = address;
+  }
+</script>

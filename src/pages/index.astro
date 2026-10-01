@@ -4,6 +4,7 @@ import Base from "../layouts/Base.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import ProjectShowcase from "../components/ProjectShowcase.astro";
+import Email from "../components/Email.astro";
 import { accentRoles } from "../lib/colors";
 import { SITE, SIDE_PROJECTS, SKILLS } from "../lib/site";
 
@@ -96,7 +97,7 @@ const projects = (await getCollection("projects")).sort(
       <h2 id="contact-titre">Contact</h2>
       <div class="outro-body">
         <p>Un projet, une question, une opportunité ? Le plus simple est de m'écrire.</p>
-        <a class="outro-mail" href={`mailto:${SITE.email}`}>{SITE.email}</a>
+        <Email class="outro-mail" />
         <a class="btn" href={SITE.github} rel="me noopener" target="_blank">
           GitHub <span aria-hidden="true">↗</span>
         </a>
