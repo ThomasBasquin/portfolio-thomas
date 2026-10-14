@@ -24,7 +24,6 @@ EXCLUDE=(
 ORDER=(
   "thomasbasquin.fr"
   "mariewach.fr"
-  "martinbasquin.thomasbasquin.fr"
   "nook.thomasbasquin.fr"
   "pokedex.thomasbasquin.fr"
   "runway.thomasbasquin.fr"
@@ -39,7 +38,6 @@ declare -A LABELS=(
   ["thomasbasquin.fr"]="Portfolio"
   ["pokedex.thomasbasquin.fr"]="Pokédex"
   ["runway.thomasbasquin.fr"]="Runway"
-  ["martinbasquin.thomasbasquin.fr"]="Martin Basquin"
   ["mariewach.fr"]="Marie Wach"
   ["nook.thomasbasquin.fr"]="Nook"
   ["stats.thomasbasquin.fr"]="Code Server Titouan"
