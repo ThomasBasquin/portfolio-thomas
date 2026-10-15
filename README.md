@@ -15,7 +15,7 @@ npm run build    # build statique dans dist/
 npm run preview  # sert dist/ localement
 npm run check    # vérification TypeScript / Astro
 npm run captures # régénère les médias depuis les sites en production
-./deploy.sh      # build + rsync dist/ vers /var/www/html/
+git ship         # déploie le commit poussé sur main (voir le repo infra)
 ```
 
 ## Structure
