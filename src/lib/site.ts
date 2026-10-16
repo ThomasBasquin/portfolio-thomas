@@ -30,7 +30,6 @@ export const SIDE_PROJECTS = [
       "Une page qui vérifie toutes les deux heures que chacun de mes sites répond. Les sites sont trouvés automatiquement dans la configuration du serveur.",
     stack: "Bash · systemd · nginx",
     year: 2026,
-    href: "https://github.com/ThomasBasquin/portfolio-thomas/tree/main/infra/status",
   },
 ] as const;
 

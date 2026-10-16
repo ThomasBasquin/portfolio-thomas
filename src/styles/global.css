@@ -843,7 +843,7 @@ main {
   border-top: 1px solid var(--line);
 }
 
-.side-list a {
+.side-item {
   display: grid;
   grid-template-columns: minmax(0, 14rem) minmax(0, 1fr) auto;
   align-items: baseline;
@@ -905,7 +905,7 @@ main {
 }
 
 @media (max-width: 48rem) {
-  .side-list a {
+  .side-item {
     grid-template-columns: minmax(0, 1fr);
   }
 }

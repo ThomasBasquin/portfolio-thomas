@@ -1,7 +1,0 @@
-[Unit]
-Description=Generate VPS status JSON snapshot
-
-[Service]
-Type=oneshot
-User=thomas
-ExecStart=/home/thomas/projects/portfolio-thomas/infra/status/check.sh

@@ -64,20 +64,24 @@ const projects = (await getCollection("projects")).sort(
     <section class="band container grid" id="petits-projets" aria-labelledby="petits-titre">
       <h2 id="petits-titre">Petits projets</h2>
       <ul class="side-list">
-        {SIDE_PROJECTS.map((project) => (
-          <li>
-            <a href={project.href} rel="noopener" target="_blank">
-              <span class="side-name">
-                {project.name} <span aria-hidden="true">↗</span>
-              </span>
-              <span class="side-desc">{project.description}</span>
-              <span class="side-meta micro">
-                <span>{project.stack}</span>
-                <span>{project.year}</span>
-              </span>
-            </a>
-          </li>
-        ))}
+        {SIDE_PROJECTS.map((project) => {
+          const Row = "href" in project ? "a" : "div";
+          const link = "href" in project ? { href: project.href, rel: "noopener", target: "_blank" } : {};
+          return (
+            <li>
+              <Row class="side-item" {...link}>
+                <span class="side-name">
+                  {project.name} {"href" in project && <span aria-hidden="true">↗</span>}
+                </span>
+                <span class="side-desc">{project.description}</span>
+                <span class="side-meta micro">
+                  <span>{project.stack}</span>
+                  <span>{project.year}</span>
+                </span>
+              </Row>
+            </li>
+          );
+        })}
       </ul>
     </section>
 
