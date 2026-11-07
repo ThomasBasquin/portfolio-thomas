@@ -845,14 +845,20 @@ main {
 
 .side-item {
   display: grid;
-  grid-template-columns: minmax(0, 14rem) minmax(0, 1fr) auto;
-  align-items: baseline;
-  gap: 0.5rem clamp(1rem, 3vw, 2.5rem);
-  padding-block: 1.35rem;
+  grid-template-columns: minmax(0, 17rem) minmax(0, 1fr);
+  align-items: center;
+  gap: 1.25rem clamp(1.25rem, 3vw, 2.75rem);
+  padding-block: 1.5rem;
   padding-right: clamp(0.5rem, 1.2vw, 1rem);
   border-bottom: 1px solid var(--line);
   text-decoration: none;
   transition: background-color 180ms ease-out;
+}
+
+.side-body {
+  display: grid;
+  gap: 0.6rem;
+  align-content: center;
 }
 
 @media (hover: hover) {
@@ -907,6 +913,131 @@ main {
 @media (max-width: 48rem) {
   .side-item {
     grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+/* Vignettes : le vrai produit, recadré sur le moment où il sert. */
+.side-media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  border-radius: var(--radius);
+  border: 1px solid var(--line-soft);
+  background: var(--surface);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.side-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (hover: hover) {
+  .side-list a:hover .side-media,
+  .side-list div.side-item:hover .side-media {
+    border-color: var(--line);
+  }
+}
+
+/* ClaudeBar : coin de la barre des menus, grossi jusqu'au pixel du crabe. */
+.mb {
+  --crab: #d97757;
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(170deg, oklch(24% 0.02 265), oklch(15% 0.012 265));
+}
+
+.mb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(55% 75% at 70% 12%, color-mix(in oklab, var(--crab) 45%, transparent), transparent 72%);
+  opacity: 0;
+  animation: mb-halo 7s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.mb-bar {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 44%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7%;
+  padding-inline: 7% 8%;
+  background: color-mix(in oklab, white 7%, transparent);
+  border-bottom: 1px solid color-mix(in oklab, white 9%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+.mb-crab {
+  position: relative;
+  z-index: 1;
+  height: 62%;
+  aspect-ratio: 1;
+  shape-rendering: crispEdges;
+}
+
+.mb-crab-idle {
+  fill: var(--ink);
+  animation: mb-idle 7s steps(1, end) infinite;
+}
+
+.mb-crab-waiting {
+  fill: var(--crab);
+  opacity: 0;
+  animation: mb-waiting 7s steps(1, end) infinite;
+}
+
+.mb-crab-eye {
+  fill: #1a1613;
+}
+
+.mb-clock {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: clamp(1rem, 0.6rem + 1.4vw, 1.6rem);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+
+@keyframes mb-idle {
+  0% { opacity: 1; }
+  45% { opacity: 0; }
+  95% { opacity: 1; }
+}
+
+@keyframes mb-waiting {
+  0% { opacity: 0; }
+  45% { opacity: 1; }
+  95% { opacity: 0; }
+}
+
+@keyframes mb-halo {
+  0%, 40% { opacity: 0; }
+  50%, 88% { opacity: 1; }
+  96%, 100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mb::after,
+  .mb-crab-idle,
+  .mb-crab-waiting {
+    animation: none;
+  }
+
+  .mb-crab-idle {
+    opacity: 0;
+  }
+
+  .mb-crab-waiting,
+  .mb::after {
+    opacity: 1;
   }
 }
 
