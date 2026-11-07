@@ -17,12 +17,33 @@ export const SITE = {
 
 export const SIDE_PROJECTS = [
   {
-    name: "Peace Preamp",
+    name: "Virtual Deck",
     description:
-      "Un script Windows qui règle le volume de l'égaliseur audio depuis le clavier, avec un affichage à l'écran et un profil pour le casque et un pour les enceintes.",
-    stack: "AutoHotkey",
+      "Des raccourcis et un panneau à l'écran pour piloter mon PC de jeu sans quitter la partie : volume de l'égaliseur, micro, HDR, second écran, profils d'overclock et alertes de température. Le tout sans être pris pour une triche par les anti-cheats.",
+    stack: "PowerShell · AutoHotkey",
     year: 2026,
-    href: "https://github.com/ThomasBasquin/peace-preamp-ahk",
+    href: "https://github.com/ThomasBasquin/virtual-deck",
+  },
+  {
+    name: "Ariane",
+    description:
+      "Un lanceur pour le Mac au look de Spotlight, qui affiche les apps et les fichiers dès la première lettre, là où Spotlight met jusqu'à une seconde à déplier ses résultats. Aucune recherche web, des alias perso, et il apprend mes choix.",
+    stack: "Swift · SwiftUI",
+    year: 2026,
+  },
+  {
+    name: "ClaudeBar",
+    description:
+      "Une icône dans la barre des menus du Mac qui s'allume quand une session Claude Code attend ma réponse. Un clic ramène au bon terminal, y compris dans VS Code.",
+    stack: "Swift · extension VS Code",
+    year: 2026,
+  },
+  {
+    name: "Shunt",
+    description:
+      "Une icône qui n'apparaît dans la barre des menus que si le Mac est mal alimenté : mauvais chargeur, ou batterie qui se vide alors qu'il est branché.",
+    stack: "Swift · C",
+    year: 2026,
   },
   {
     name: "Statut des sites",
@@ -35,7 +56,7 @@ export const SIDE_PROJECTS = [
 
 export const SKILLS = [
   { label: "Front-end", items: ["React", "Next.js", "SvelteKit", "Astro", "Tailwind CSS", "TanStack Query"] },
-  { label: "Langages", items: ["TypeScript", "JavaScript", "HTML et CSS", "Bash", "AutoHotkey"] },
+  { label: "Langages", items: ["TypeScript", "JavaScript", "Swift", "HTML et CSS", "Bash", "PowerShell", "AutoHotkey"] },
   { label: "Back-end et données", items: ["Node.js", "SQLite", "Drizzle ORM", "Better Auth", "API REST"] },
   { label: "Mobile", items: ["Conception mobile-first", "PWA installable", "Service worker", "Gestes tactiles"] },
   { label: "Hébergement", items: ["Serveur Linux", "nginx", "systemd", "Sites statiques"] },
