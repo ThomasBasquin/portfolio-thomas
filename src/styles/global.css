@@ -836,6 +836,51 @@ main {
   grid-column: 4 / -1;
 }
 
+/* Petits projets : un vrai début de chapitre, sinon la liste se lit comme la suite
+   du dernier grand projet. */
+.band--chapter .chapter-head {
+  grid-column: 1 / 4;
+  align-self: start;
+  position: sticky;
+  top: calc(3.5rem + 1.5rem);
+  display: grid;
+  gap: 1rem;
+}
+
+.band--chapter h2 {
+  grid-column: auto;
+  padding-top: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 1.2rem + 2.2vw, 3.25rem);
+  font-weight: 600;
+  font-stretch: 102%;
+  letter-spacing: -0.03em;
+  line-height: 0.98;
+  text-transform: none;
+  color: var(--ink);
+}
+
+.chapter-count {
+  color: var(--accent-ink);
+}
+
+.chapter-lede {
+  color: var(--ink-2);
+  max-width: 24ch;
+  text-wrap: pretty;
+}
+
+@media (max-width: 60rem) {
+  .band--chapter .chapter-head {
+    position: static;
+    margin-bottom: 1.5rem;
+  }
+
+  .chapter-lede {
+    max-width: 36ch;
+  }
+}
+
 .side-list {
   list-style: none;
   margin: 0;
@@ -942,102 +987,30 @@ main {
   }
 }
 
-/* ClaudeBar : coin de la barre des menus, grossi jusqu'au pixel du crabe. */
+/* ClaudeBar : deux captures de la vraie barre des menus, au repos puis en attente. */
 .mb {
-  --crab: #d97757;
   position: absolute;
   inset: 0;
-  background: linear-gradient(170deg, oklch(24% 0.02 265), oklch(15% 0.012 265));
 }
 
-.mb::after {
-  content: "";
+.mb img {
   position: absolute;
   inset: 0;
-  background: radial-gradient(55% 75% at 70% 12%, color-mix(in oklab, var(--crab) 45%, transparent), transparent 72%);
-  opacity: 0;
-  animation: mb-halo 7s ease-in-out infinite;
-  pointer-events: none;
 }
 
-.mb-bar {
-  position: absolute;
-  inset: 0 0 auto;
-  height: 44%;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 7%;
-  padding-inline: 7% 8%;
-  background: color-mix(in oklab, white 7%, transparent);
-  border-bottom: 1px solid color-mix(in oklab, white 9%, transparent);
-  backdrop-filter: blur(12px);
-}
-
-.mb-crab {
-  position: relative;
-  z-index: 1;
-  height: 62%;
-  aspect-ratio: 1;
-  shape-rendering: crispEdges;
-}
-
-.mb-crab-idle {
-  fill: var(--ink);
-  animation: mb-idle 7s steps(1, end) infinite;
-}
-
-.mb-crab-waiting {
-  fill: var(--crab);
-  opacity: 0;
-  animation: mb-waiting 7s steps(1, end) infinite;
-}
-
-.mb-crab-eye {
-  fill: #1a1613;
-}
-
-.mb-clock {
-  font-family: var(--font-body);
-  font-weight: 500;
-  font-size: clamp(1rem, 0.6rem + 1.4vw, 1.6rem);
-  font-variant-numeric: tabular-nums;
-  color: var(--ink);
-  letter-spacing: -0.01em;
-}
-
-@keyframes mb-idle {
-  0% { opacity: 1; }
-  45% { opacity: 0; }
-  95% { opacity: 1; }
+.mb-waiting {
+  animation: mb-waiting 6s ease-in-out infinite;
 }
 
 @keyframes mb-waiting {
-  0% { opacity: 0; }
-  45% { opacity: 1; }
-  95% { opacity: 0; }
-}
-
-@keyframes mb-halo {
-  0%, 40% { opacity: 0; }
-  50%, 88% { opacity: 1; }
+  0%, 38% { opacity: 0; }
+  46%, 88% { opacity: 1; }
   96%, 100% { opacity: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .mb::after,
-  .mb-crab-idle,
-  .mb-crab-waiting {
+  .mb-waiting {
     animation: none;
-  }
-
-  .mb-crab-idle {
-    opacity: 0;
-  }
-
-  .mb-crab-waiting,
-  .mb::after {
-    opacity: 1;
   }
 }
 

@@ -10,37 +10,13 @@ interface Props {
 }
 
 const { media } = Astro.props;
-
-// Pixels de Resources/menubar-*.svg du dépôt claudebar, sur une grille de 1,5 pt.
-const crabIdle = [
-  [3, 3.75, 12], [3, 5.25, 1.5], [6, 5.25, 6], [13.5, 5.25, 1.5],
-  [3, 6.75, 1.5], [6, 6.75, 6], [13.5, 6.75, 1.5], [0, 8.25, 18], [0, 9.75, 18],
-  [3, 11.25, 1.5], [6, 11.25, 1.5], [10.5, 11.25, 1.5], [13.5, 11.25, 1.5],
-  [3, 12.75, 1.5], [6, 12.75, 1.5], [10.5, 12.75, 1.5], [13.5, 12.75, 1.5],
-];
-const crabWaiting = [
-  [3, 3.75, 12], [3, 5.25, 12], [3, 6.75, 12], [0, 8.25, 18], [0, 9.75, 18],
-  [3, 11.25, 1.5], [6, 11.25, 1.5], [10.5, 11.25, 1.5], [13.5, 11.25, 1.5],
-  [3, 12.75, 1.5], [6, 12.75, 1.5], [10.5, 12.75, 1.5], [13.5, 12.75, 1.5],
-];
-const crabEyes = [[4.5, 5.25], [4.5, 6.75], [12, 5.25], [12, 6.75]];
 ---
 
 <div class:list={["side-media", media ? `side-media--${media.kind}` : "side-media--pending"]}>
   {media?.kind === "claudebar" && (
-    <div class="mb" role="img" aria-label="La barre des menus du Mac : le crabe de ClaudeBar passe du gris à l'orange quand une session attend une réponse.">
-      <div class="mb-bar">
-        <svg class="mb-crab" viewBox="0 0 18 18" aria-hidden="true">
-          <g class="mb-crab-idle">
-            {crabIdle.map(([x, y, w]) => <rect x={x} y={y} width={w} height="1.56" />)}
-          </g>
-          <g class="mb-crab-waiting">
-            {crabWaiting.map(([x, y, w]) => <rect x={x} y={y} width={w} height="1.56" />)}
-            {crabEyes.map(([x, y]) => <rect class="mb-crab-eye" x={x} y={y} width="1.5" height="1.56" />)}
-          </g>
-        </svg>
-        <span class="mb-clock">23:14</span>
-      </div>
+    <div class="mb" role="img" aria-label="La barre des menus du Mac : le crabe de ClaudeBar passe du blanc à l'orange quand une session attend une réponse.">
+      <img src={versioned("/media/side/claudebar-idle.webp")} alt="" width="1120" height="700" loading="lazy" decoding="async" />
+      <img class="mb-waiting" src={versioned("/media/side/claudebar-waiting.webp")} alt="" width="1120" height="700" loading="lazy" decoding="async" />
     </div>
   )}
   {media?.kind === "image" && (

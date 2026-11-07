@@ -62,8 +62,12 @@ const projects = (await getCollection("projects")).sort(
       <ProjectShowcase project={project} index={i} />
     ))}
 
-    <section class="band container grid" id="petits-projets" aria-labelledby="petits-titre">
-      <h2 id="petits-titre">Petits projets</h2>
+    <section class="band band--chapter container grid" id="petits-projets" aria-labelledby="petits-titre">
+      <header class="chapter-head">
+        <p class="micro chapter-count">{String(SIDE_PROJECTS.length).padStart(2, "0")} projets</p>
+        <h2 id="petits-titre">Petits projets</h2>
+        <p class="chapter-lede">Des outils faits pour mon propre usage, sur Mac, sur Windows et sur mon serveur.</p>
+      </header>
       <ul class="side-list">
         {SIDE_PROJECTS.map((project) => {
           const Row = project.href ? "a" : "div";
